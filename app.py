@@ -27,7 +27,7 @@ socketio = SocketIO(
     cors_allowed_origins="*",
     logger=False,
     engineio_logger=False,
-    async_mode='eventlet'
+    async_mode='gevent'
 )
 
 groq_client = Groq(api_key=os.getenv("GROQ_API_KEY"))
