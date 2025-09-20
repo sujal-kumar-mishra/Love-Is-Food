@@ -6,6 +6,8 @@ python-dotenv==1.0.1
 # HTTP and API Libraries
 requests==2.31.0
 groq==0.9.0
+a4f-local
+httpx
 
 # WebSocket and Event Libraries
 python-socketio==5.10.0
