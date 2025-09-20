@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kitchen Assistant AI</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <div class="header-content">
+                <div class="status-indicator" id="status-indicator"></div>
+                <h1><i class="fas fa-utensils"></i> Kitchen Assistant AI</h1>
+                <div class="connection-status">Ready to help</div>
+            </div>
+        </header>
+        
+        <div class="main-content">
+            <!-- Conversation Section -->
+            <section class="conversation-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-comments"></i> Conversation</h2>
+                </div>
+                <div id="chat-container" class="chat-container">
+                    <div class="chat-message assistant">
+                        <div class="message-bubble">
+                            <i class="fas fa-chef-hat"></i>
+                            Hello! I'm your kitchen assistant. Ask me to find recipes, set timers, convert measurements, or suggest ingredient substitutions!
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- YouTube Recipe Videos Section -->
+            <section class="video-section">
+                <div class="section-header">
+                    <div class="section-title">
+                        <h2><i class="fas fa-video"></i> Recipe Videos</h2>
+                    </div>
+                    <div class="section-controls">
+                        <button class="size-control expand" onclick="resizeSection(this, 'expand')" title="Expand">
+                            <i class="fas fa-expand-alt"></i>
+                        </button>
+                        <button class="size-control shrink" onclick="resizeSection(this, 'shrink')" title="Shrink">
+                            <i class="fas fa-compress-alt"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="manual-controls">
+                    <form id="youtube-form" class="inline-form">
+                        <input type="text" id="youtube-query" placeholder="Search for recipes..." required>
+                        <button type="submit"><i class="fas fa-search"></i> Search</button>
+                    </form>
+                </div>
+                <div id="video-content">
+                    <div id="video-player-container" class="video-player-hidden">
+                        <div id="youtube-player"></div>
+                        <div class="video-controls">
+                            <button id="play-pause-btn" class="video-control-btn">
+                                <i class="fas fa-play"></i>
+                            </button>
+                            <button id="stop-video-btn" class="video-control-btn">
+                                <i class="fas fa-stop"></i>
+                            </button>
+                            <span id="video-title" class="video-title">No video selected</span>
+                        </div>
+                    </div>
+                    <div id="video-results" class="video-results">
+                        <div class="no-results">
+                            <i class="fas fa-search"></i>
+                            <p>Use the search above or ask me to find recipe videos!</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Recipe Search Section -->
+            <section class="recipes-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-utensils"></i> Recipe Database</h2>
+                </div>
+                <div class="recipe-search-controls">
+                    <form id="recipe-search-form" class="inline-form">
+                        <input type="text" id="recipe-query" placeholder="Search for recipes..." required>
+                        <select id="recipe-diet">
+                            <option value="">Any Diet</option>
+                            <option value="vegetarian">Vegetarian</option>
+                            <option value="vegan">Vegan</option>
+                            <option value="ketogenic">Keto</option>
+                            <option value="paleo">Paleo</option>
+                            <option value="gluten free">Gluten Free</option>
+                        </select>
+                        <select id="recipe-cuisine">
+                            <option value="">Any Cuisine</option>
+                            <option value="italian">Italian</option>
+                            <option value="mexican">Mexican</option>
+                            <option value="asian">Asian</option>
+                            <option value="american">American</option>
+                            <option value="indian">Indian</option>
+                            <option value="mediterranean">Mediterranean</option>
+                        </select>
+                        <button type="submit"><i class="fas fa-search"></i> Find Recipes</button>
+                    </form>
+                </div>
+                <div id="recipes-container" class="recipes-container">
+                    <div class="no-content">
+                        <i class="fas fa-book-open"></i>
+                        <p>Search for recipes or ask me to find something specific!</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Active Timers Section -->
+            <section class="timers-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-clock"></i> Active Timers</h2>
+                </div>
+                <div class="timer-controls">
+                    <form id="timer-form-inline" class="inline-form">
+                        <input type="number" id="timer-minutes-inline" placeholder="Minutes" min="1" max="60" value="5">
+                        <input type="text" id="timer-name-inline" placeholder="Timer name (optional)">
+                        <button type="submit"><i class="fas fa-plus"></i> Set Timer</button>
+                    </form>
+                </div>
+                <div id="timers-container" class="timers-container">
+                    <div class="no-timers">
+                        <i class="fas fa-hourglass-half"></i>
+                        <p>No active timers. Use the form above or say "set a timer for 10 minutes"!</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Unit Conversions Section -->
+            <section class="conversions-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-balance-scale"></i> Unit Conversions</h3>
+                </div>
+                <div class="manual-controls">
+                    <form id="conversion-form" class="inline-form">
+                        <input type="number" id="convert-amount" placeholder="Amount" step="0.1" value="1">
+                        <select id="convert-from">
+                            <option value="cup">Cup</option>
+                            <option value="tablespoon">Tablespoon</option>
+                            <option value="teaspoon">Teaspoon</option>
+                            <option value="fl oz">Fl oz</option>
+                            <option value="gallon">Gallon</option>
+                            <option value="liter">Liter</option>
+                            <option value="ml">Milliliter</option>
+                        </select>
+                        <span>to</span>
+                        <select id="convert-to">
+                            <option value="ml">Milliliter</option>
+                            <option value="cup">Cup</option>
+                            <option value="tablespoon">Tablespoon</option>
+                            <option value="teaspoon">Teaspoon</option>
+                            <option value="fl oz">Fl oz</option>
+                            <option value="gallon">Gallon</option>
+                            <option value="liter">Liter</option>
+                        </select>
+                        <button type="submit"><i class="fas fa-exchange-alt"></i> Convert</button>
+                    </form>
+                </div>
+                <div id="conversions-container" class="conversions-container">
+                    <div class="no-content">
+                        <i class="fas fa-calculator"></i>
+                        <p>Use the form above or ask me to convert units</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Recipe Substitutions Section -->
+            <section class="substitutions-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-exchange-alt"></i> Recipe Substitutions</h3>
+                </div>
+                <div id="substitutions-container" class="substitutions-container">
+                    <div class="no-content">
+                        <i class="fas fa-magic"></i>
+                        <p>Ask me for substitutions like "what can I use instead of butter?"</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+        
+        <!-- Voice Input Area -->
+        <footer class="input-area">
+            <div class="mic-container">
+                <div id="mic-button" class="mic-button">
+                    <svg class="mic-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" fill="currentColor"/>
+                        <path d="M19 10v2a7 7 0 0 1-14 0v-2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M12 19v4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M8 23h8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <div class="listening-animation"></div>
+                </div>
+                <div class="mic-status">Click to speak</div>
+            </div>
+        </footer>
+    </div>
+    
+    <!-- Scripts -->
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <script src="/static/script.js"></script>
+</body>
+</html>
