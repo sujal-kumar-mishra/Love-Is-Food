@@ -350,6 +350,9 @@ Available tools and when to use them:
   NEVER calculate conversions manually - ALWAYS use this tool!
 
 - recipe_substitution: When user needs ingredient substitutions
+  CRITICAL: Extract this tool for ANY substitution request!
+  Examples: "substitute butter", "replace eggs", "instead of milk", "alternative to flour", "what can I use instead of sugar"
+  Keywords to watch for: substitute/replace/instead/alternative + ingredient name
   Format: {"tool_name": "recipe_substitution", "parameters": {"ingredient": "butter", "quantity": "1 cup"}}
 
 - search_recipes: When user wants to find recipes from the recipe database
