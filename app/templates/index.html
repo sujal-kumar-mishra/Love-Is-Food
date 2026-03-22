@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kitchen Assistant AI</title>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/color-system.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/ui-enhancements.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/result-cards.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/patterns.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/animations.css') }}">
+    <link rel="stylesheet" href="https://unpkg.com/splitting@1.0.6/dist/splitting.css">
+    
+    <!-- Animation Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/typed.js/2.0.12/typed.min.js"></script>
+    <script src="https://unpkg.com/splitting@1.0.6/dist/splitting.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
+</head>
+<body>
+    <!-- Persistent Status Bar -->
+    <div id="status-bar" class="status-bar status-idle">
+        <span id="status-icon" class="status-icon"><i class="fas fa-circle"></i></span>
+        <span id="status-text" class="status-text">Idle - Click the mic to start</span>
+    </div>
+
+    <div class="app-container">
+        <!-- Global Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <div class="status-indicator" id="status-indicator"></div>
+                <h1><i class="fas fa-utensils"></i> Kitchen Assistant AI</h1>
+                <div style="display: flex; gap: 1rem; align-items: center;">
+                    <!-- User Info -->
+                    {% if current_user.is_authenticated %}
+                    <div class="user-info" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background: rgba(255,255,255,0.1); border-radius: 20px;">
+                        <i class="fas fa-user-circle" style="font-size: 1.2rem;"></i>
+                        <span style="font-weight: 500;">{{ current_user.username }}</span>
+                    </div>
+                    {% endif %}
+                    
+                    <button id="home-btn" class="hands-free-toggle hover-scale icon-bounce" title="Back to Conversation" style="padding: 0.6rem 1rem;">
+                        <i class="fas fa-home"></i>
+                    </button>
+                    
+                    {% if current_user.is_authenticated %}
+                    <button id="history-btn" class="hands-free-toggle hover-scale icon-bounce" title="View Conversation History" style="padding: 0.6rem 1rem;">
+                        <i class="fas fa-history"></i>
+                    </button>
+                    {% endif %}
+                    
+                    <button id="help-btn" class="hands-free-toggle hover-scale icon-bounce" title="Help & Tour" style="padding: 0.6rem 1rem;">
+                        <i class="fas fa-question-circle"></i>
+                    </button>
+                    
+                    <button id="settings-btn" class="hands-free-toggle" title="Open settings" style="padding: 0.6rem 1rem;display: none;" >
+                        <i class="fas fa-cog"></i>
+                    </button>
+                    
+                    {% if current_user.is_authenticated %}
+                    <a href="/profile" class="hands-free-toggle" title="View Profile" style="padding: 0.6rem 1rem; text-decoration: none; color: inherit;">
+                        <i class="fas fa-user"></i>
+                    </a>
+                    <a href="/logout" class="hands-free-toggle" title="Logout" style="padding: 0.6rem 1rem; text-decoration: none; color: inherit;">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Logout</span>
+                    </a>
+                    {% else %}
+                    <a href="/login" class="hands-free-toggle" title="Login" style="padding: 0.6rem 1rem; text-decoration: none; color: inherit;">
+                        <i class="fas fa-sign-in-alt"></i>
+                        <span>Login</span>
+                    </a>
+                    {% endif %}
+                    
+                    <button id="hands-free-toggle" class="hands-free-toggle" title="Enable hands-free voice control" style="display: none;">
+                        <i class="fas fa-microphone-alt"></i>
+                        <span>Enable Hands-Free</span>
+                    </button>
+                </div>
+                <div class="connection-status">Ready to help</div>
+            </div>
+        </header>
+        
+        <!-- Main Body: Two-Column Layout -->
+        <div class="app-body">
+            <!-- Main View: Dynamic Content Area -->
+            <main id="main-view" class="animated-gradient-bg hero-background">
+                <!-- Default: Conversation View -->
+                <div id="conversation-view" class="view-container page-transition">
+                    <div class="view-header">
+                        <h2>
+                            <svg class="icon" style="width: 1.5rem; height: 1.5rem; margin-right: 0.5rem;">
+                                <use href="{{ url_for('static', filename='images/icons.svg') }}#chef-hat"></use>
+                            </svg>
+                            Conversation
+                        </h2>
+                    </div>
+                    <div id="chat-container" class="chat-container">
+                        <div class="chat-message assistant">
+                            <div class="message-bubble">
+                                <i class="fas fa-chef-hat"></i>
+                                Hello! I'm your kitchen assistant. Ask me to find recipes, set timers, convert measurements, or suggest ingredient substitutions!
+                            </div>
+                        </div>
+                    </div>
+                    <div class="manual-input-container">
+                        <form id="manual-message-form" class="manual-message-form">
+                            <input type="text" id="manual-message-input" placeholder="Type your message here..." autocomplete="off" class="transition-base">
+                            <button type="submit" title="Send message" class="btn-primary-enhanced hover-scale">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </main>
+
+            <!-- Sidebar: Persistent Context Panel -->
+            <aside id="sidebar">
+                <!-- Active Timers Module (Always Visible) -->
+                <div class="sidebar-module timers-module">
+                    <div class="module-header">
+                        <h3><i class="fas fa-clock"></i> Active Timers</h3>
+                    </div>
+                    <div class="timer-controls">
+                        <form id="timer-form-inline" class="inline-form">
+                            <input type="number" id="timer-minutes-inline" placeholder="Min" min="1" max="60" value="5">
+                            <input type="text" id="timer-name-inline" placeholder="Name (optional)">
+                            <button type="submit" title="Set Timer"><i class="fas fa-plus"></i></button>
+                        </form>
+                    </div>
+                    <div id="timers-container" class="timers-container">
+                        <div class="no-timers">
+                            <i class="fas fa-hourglass-half"></i>
+                            <p>No active timers</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Tools Module -->
+                <div class="sidebar-module tools-module">
+                    <div class="module-header">
+                        <h3><i class="fas fa-tools"></i> Quick Tools</h3>
+                    </div>
+                    <div class="quick-tools stagger-fade-in">
+                        <button class="tool-btn transition-base" onclick="switchView('unitConverter')">
+                            <i class="fas fa-balance-scale"></i>
+                            <span>Unit Converter</span>
+                        </button>
+                        <button class="tool-btn transition-base" onclick="switchView('substitutions')">
+                            <i class="fas fa-exchange-alt"></i>
+                            <span>Substitutions</span>
+                        </button>
+                        <button class="tool-btn transition-base" onclick="switchView('recipeSearch')">
+                            <i class="fas fa-search"></i>
+                            <span>Recipe Search</span>
+                        </button>
+                        <button class="tool-btn transition-base" onclick="switchView('videoSearch')">
+                            <i class="fas fa-video"></i>
+                            <span>Video Search</span>
+                        </button>
+                        <button class="tool-btn transition-base" onclick="switchView('myNotes')">
+                            <i class="fas fa-sticky-note"></i>
+                            <span>My Notes</span>
+                        </button>
+                    </div>
+                </div>
+            </aside>
+        </div>
+        
+        <!-- Command Bar: Fixed Bottom -->
+        <footer class="command-bar">
+            <div class="mic-container">
+                <div id="mic-button" class="mic-button">
+                    <svg class="mic-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" fill="currentColor"/>
+                        <path d="M19 10v2a7 7 0 0 1-14 0v-2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M12 19v4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M8 23h8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <div class="listening-animation"></div>
+                </div>
+                <div class="mic-status">Click to speak</div>
+            </div>
+        </footer>
+    </div>
+    
+    <!-- Hidden View Templates -->
+    <template id="recipe-search-view-template">
+        <div class="view-container">
+            <div class="view-header">
+                <button class="back-btn" onclick="switchView('conversation')">
+                    <i class="fas fa-arrow-left"></i> Back
+                </button>
+                <h2><i class="fas fa-utensils"></i> Recipe Search</h2>
+            </div>
+            <div class="view-content">
+                <form id="recipe-search-form" class="search-form">
+                    <input type="text" id="recipe-query" placeholder="Search for recipes..." required>
+                    <select id="recipe-diet">
+                        <option value="">Any Diet</option>
+                        <option value="vegetarian">Vegetarian</option>
+                        <option value="vegan">Vegan</option>
+                        <option value="ketogenic">Keto</option>
+                        <option value="paleo">Paleo</option>
+                        <option value="gluten free">Gluten Free</option>
+                    </select>
+                    <select id="recipe-cuisine">
+                        <option value="">Any Cuisine</option>
+                        <option value="italian">Italian</option>
+                        <option value="mexican">Mexican</option>
+                        <option value="asian">Asian</option>
+                        <option value="american">American</option>
+                        <option value="indian">Indian</option>
+                        <option value="mediterranean">Mediterranean</option>
+                    </select>
+                    <button type="submit"><i class="fas fa-search"></i> Search</button>
+                </form>
+                <div id="recipes-container" class="results-container"></div>
+            </div>
+        </div>
+    </template>
+
+    <template id="video-search-view-template">
+        <div class="view-container">
+            <div class="view-header">
+                <button class="back-btn" onclick="switchView('conversation')">
+                    <i class="fas fa-arrow-left"></i> Back
+                </button>
+                <h2><i class="fas fa-video"></i> Recipe Videos</h2>
+            </div>
+            <div class="view-content">
+                <form id="youtube-form" class="search-form">
+                    <input type="text" id="youtube-query" placeholder="Search for recipe videos..." required>
+                    <button type="submit"><i class="fas fa-search"></i> Search</button>
+                </form>
+                <div id="video-player-container" class="video-player-hidden">
+                    <div id="youtube-player"></div>
+                    <div class="video-controls">
+                        <button id="play-pause-btn" class="video-control-btn">
+                            <i class="fas fa-play"></i>
+                        </button>
+                        <button id="stop-video-btn" class="video-control-btn">
+                            <i class="fas fa-stop"></i>
+                        </button>
+                        <span id="video-title" class="video-title">No video selected</span>
+                    </div>
+                </div>
+                <div id="video-results" class="results-container"></div>
+            </div>
+        </div>
+    </template>
+
+    <template id="unit-converter-view-template">
+        <div class="view-container">
+            <div class="view-header">
+                <button class="back-btn" onclick="switchView('conversation')">
+                    <i class="fas fa-arrow-left"></i> Back
+                </button>
+                <h2><i class="fas fa-balance-scale"></i> Unit Converter</h2>
+            </div>
+            <div class="view-content">
+                <form id="conversion-form" class="converter-form">
+                    <div class="form-row">
+                        <input type="number" id="convert-amount" placeholder="Amount" step="0.1" value="1">
+                        <select id="convert-from">
+                            <option value="cup">Cup</option>
+                            <option value="tablespoon">Tablespoon</option>
+                            <option value="teaspoon">Teaspoon</option>
+                            <option value="fl oz">Fl oz</option>
+                            <option value="gallon">Gallon</option>
+                            <option value="liter">Liter</option>
+                            <option value="ml">Milliliter</option>
+                        </select>
+                    </div>
+                    <div class="arrow-icon"><i class="fas fa-arrow-down"></i></div>
+                    <div class="form-row">
+                        <select id="convert-to">
+                            <option value="ml">Milliliter</option>
+                            <option value="cup">Cup</option>
+                            <option value="tablespoon">Tablespoon</option>
+                            <option value="teaspoon">Teaspoon</option>
+                            <option value="fl oz">Fl oz</option>
+                            <option value="gallon">Gallon</option>
+                            <option value="liter">Liter</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="convert-btn"><i class="fas fa-exchange-alt"></i> Convert</button>
+                </form>
+                <div id="conversions-container" class="results-container"></div>
+            </div>
+        </div>
+    </template>
+
+    <template id="substitutions-view-template">
+        <div class="view-container">
+            <div class="view-header">
+                <button class="back-btn" onclick="switchView('conversation')">
+                    <i class="fas fa-arrow-left"></i> Back
+                </button>
+                <h2><i class="fas fa-exchange-alt"></i> Ingredient Substitutions</h2>
+            </div>
+            <div class="view-content">
+                <div class="info-panel" style="background: linear-gradient(135deg, rgba(104, 211, 145, 0.1) 0%, rgba(237, 137, 54, 0.1) 100%); border-left: 4px solid #68D391; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem;">
+                    <p style="margin: 0; display: flex; align-items: start; gap: 0.5rem;">
+                        <i class="fas fa-lightbulb" style="color: #ED8936; margin-top: 0.25rem;"></i>
+                        <span>
+                            <strong>Find Smart Substitutions:</strong> Ask me things like 
+                            <em>"What can I use instead of butter?"</em>, 
+                            <em>"Substitute for eggs in baking"</em>, or 
+                            <em>"Dairy-free milk alternatives"</em>. 
+                            I'll provide detailed substitution ratios and usage tips!
+                        </span>
+                    </p>
+                </div>
+                <div id="substitutions-container" class="results-container"></div>
+            </div>
+        </div>
+    </template>
+
+    <template id="my-notes-view-template">
+        <div class="view-container">
+            <div class="view-header">
+                <button class="back-btn" onclick="switchView('conversation')">
+                    <i class="fas fa-arrow-left"></i> Back
+                </button>
+                <h2><i class="fas fa-sticky-note"></i> My Notes</h2>
+            </div>
+            <div class="view-content">
+                <div class="info-panel" style="background: linear-gradient(135deg, rgba(255, 193, 7, 0.1) 0%, rgba(237, 137, 54, 0.1) 100%); border-left: 4px solid #FFC107; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem;">
+                    <p style="margin: 0; display: flex; align-items: start; gap: 0.5rem;">
+                        <i class="fas fa-info-circle" style="color: #FFC107; margin-top: 0.25rem;"></i>
+                        <span>
+                            <strong>Your Personal Recipe Notes:</strong> All notes you save while watching recipe videos appear here. 
+                            Each note is linked to its recipe/video for easy reference!
+                        </span>
+                    </p>
+                </div>
+                <div id="notes-loading" class="loading-indicator" style="display: none; text-align: center; padding: 2rem;">
+                    <i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: #ED8936;"></i>
+                    <p style="margin-top: 1rem; color: #666;">Loading your notes...</p>
+                </div>
+                <div id="notes-container" class="results-container">
+                    <!-- Notes will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </template>
+    
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal-hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-cog"></i> Settings</h2>
+                <button class="close-button" id="close-modal">×</button>
+            </div>
+            <form class="settings-form" id="settings-form">
+                <div class="form-group">
+                    <label for="tts-voice">
+                        <i class="fas fa-volume-up"></i> TTS Voice
+                    </label>
+                    <select id="tts-voice" name="tts-voice">
+                        <option value="default">Default Voice</option>
+                        <option value="male">Male Voice</option>
+                        <option value="female">Female Voice</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="tts-speed">
+                        <i class="fas fa-tachometer-alt"></i> Speech Speed
+                    </label>
+                    <input type="range" id="tts-speed" name="tts-speed" min="0.5" max="2" step="0.1" value="1">
+                    <div class="range-value" id="speed-value">1.0x</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="tts-volume">
+                        <i class="fas fa-volume-down"></i> Volume
+                    </label>
+                    <input type="range" id="tts-volume" name="tts-volume" min="0" max="100" step="5" value="80">
+                    <div class="range-value" id="volume-value">80%</div>
+                </div>
+                
+                <div class="form-group">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="timer-notifications" name="timer-notifications" checked>
+                        <label for="timer-notifications">
+                            <i class="fas fa-bell"></i> Enable Timer Notifications
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="sound-effects" name="sound-effects" checked>
+                        <label for="sound-effects">
+                            <i class="fas fa-music"></i> Enable Sound Effects
+                        </label>
+                    </div>
+                </div>
+                
+                <button type="submit" class="settings-button">
+                    <i class="fas fa-save"></i> Save Settings
+                </button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Conversation History Modal -->
+    <div id="history-modal" class="history-modal">
+        <div class="history-modal-content">
+            <div class="history-modal-header">
+                <h2><i class="fas fa-history"></i> Conversation History</h2>
+                <button class="history-close-btn" id="history-close-btn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="history-filters">
+                <div class="filter-group">
+                    <label><i class="fas fa-calendar"></i> Show:</label>
+                    <select id="history-filter">
+                        <option value="50">Last 50 messages</option>
+                        <option value="100">Last 100 messages</option>
+                        <option value="200">Last 200 messages</option>
+                        <option value="all">All conversations</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label><i class="fas fa-filter"></i> Filter:</label>
+                    <select id="history-role-filter">
+                        <option value="all">All messages</option>
+                        <option value="user">My messages</option>
+                        <option value="assistant">AI responses</option>
+                    </select>
+                </div>
+                <button id="clear-history-btn" class="clear-history-btn" title="Clear all history">
+                    <i class="fas fa-trash-alt"></i> Clear History
+                </button>
+            </div>
+            
+            <div class="history-stats">
+                <div class="stat-card">
+                    <i class="fas fa-comments"></i>
+                    <div>
+                        <div class="stat-value" id="total-conversations">0</div>
+                        <div class="stat-label">Total Messages</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-user"></i>
+                    <div>
+                        <div class="stat-value" id="user-messages">0</div>
+                        <div class="stat-label">Your Messages</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-robot"></i>
+                    <div>
+                        <div class="stat-value" id="ai-messages">0</div>
+                        <div class="stat-label">AI Responses</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="history-container" class="history-container">
+                <div class="history-loading">
+                    <i class="fas fa-spinner fa-spin"></i> Loading conversation history...
+                </div>
+            </div>
+            
+            <div class="history-footer">
+                <button id="export-history-btn" class="export-btn">
+                    <i class="fas fa-download"></i> Export as JSON
+                </button>
+                <button id="refresh-history-btn" class="refresh-btn">
+                    <i class="fas fa-sync-alt"></i> Refresh
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Help & Tour Modal -->
+    <div id="help-modal" class="help-modal">
+        <div class="help-modal-content">
+            <div class="help-modal-header">
+                <h2><i class="fas fa-graduation-cap"></i> Welcome to Kitchen Assistant!</h2>
+                <button class="help-close-btn" id="help-close-btn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="help-tabs">
+                <button class="help-tab active" data-tab="tour">
+                    <i class="fas fa-route"></i> Take a Tour
+                </button>
+                <button class="help-tab" data-tab="features">
+                    <i class="fas fa-star"></i> Features
+                </button>
+                <button class="help-tab" data-tab="voice">
+                    <i class="fas fa-microphone"></i> Voice Commands
+                </button>
+                <button class="help-tab" data-tab="tips">
+                    <i class="fas fa-lightbulb"></i> Tips & Tricks
+                </button>
+            </div>
+            
+            <!-- Tour Tab -->
+            <div class="help-tab-content active" id="tour-content">
+                <div class="tour-intro">
+                    <div class="tour-icon">
+                        <i class="fas fa-rocket"></i>
+                    </div>
+                    <h3>🎉 Let's Explore Your Kitchen Assistant!</h3>
+                    <p>Ready for a fun guided tour? We'll show you around and teach you how to become a kitchen pro!</p>
+                    <button class="btn-tour-start" id="start-tour-btn">
+                        <i class="fas fa-play"></i> Start Interactive Tour
+                    </button>
+                </div>
+                
+                <div class="tour-features">
+                    <div class="tour-feature-card">
+                        <div class="tour-card-icon">🎤</div>
+                        <h4>Voice Control</h4>
+                        <p>Say "Hey Kitchen" to wake me up and ask anything!</p>
+                    </div>
+                    <div class="tour-feature-card">
+                        <div class="tour-card-icon">🍳</div>
+                        <h4>Recipe Finder</h4>
+                        <p>Find recipes with detailed pages and instructions!</p>
+                    </div>
+                    <div class="tour-feature-card">
+                        <div class="tour-card-icon">👤</div>
+                        <h4>Profile & Stats</h4>
+                        <p>Track XP, achievements, and your cooking journey!</p>
+                    </div>
+                    <div class="tour-feature-card">
+                        <div class="tour-card-icon">🎥</div>
+                        <h4>Video Detail Pages</h4>
+                        <p>Beautiful video pages with ingredients and notes!</p>
+                    </div>
+                    <div class="tour-feature-card">
+                        <div class="tour-card-icon">⏰</div>
+                        <h4>Smart Timers</h4>
+                        <p>Set multiple timers for perfect cooking every time.</p>
+                    </div>
+                    <div class="tour-feature-card">
+                        <div class="tour-card-icon">🔄</div>
+                        <h4>Unit Converter</h4>
+                        <p>Convert measurements on the fly - no math needed!</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Features Tab -->
+            <div class="help-tab-content" id="features-content">
+                <div class="features-list">
+                    <div class="feature-item">
+                        <div class="feature-icon">🎤</div>
+                        <div class="feature-details">
+                            <h4>Hands-Free Voice Control</h4>
+                            <p>Say "Hey Kitchen" to activate voice mode. Perfect when your hands are messy!</p>
+                            <ul>
+                                <li>Wake word detection</li>
+                                <li>Continuous listening mode</li>
+                                <li>Voice feedback with TTS</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-item">
+                        <div class="feature-icon">🍳</div>
+                        <div class="feature-details">
+                            <h4>Recipe Search</h4>
+                            <p>Find recipes from our database or YouTube videos.</p>
+                            <ul>
+                                <li>Search by ingredients you have</li>
+                                <li>Filter by diet (vegetarian, vegan, keto)</li>
+                                <li>Filter by cuisine (Italian, Mexican, Asian)</li>
+                                <li>Browse recipe details with step-by-step instructions</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-item">
+                        <div class="feature-icon">📖</div>
+                        <div class="feature-details">
+                            <h4>Recipe Detail Pages</h4>
+                            <p>Beautiful, comprehensive recipe pages with everything you need!</p>
+                            <ul>
+                                <li>Complete ingredient lists with measurements</li>
+                                <li>Step-by-step cooking instructions</li>
+                                <li>Nutritional information & cooking time</li>
+                                <li>Professional layout with images</li>
+                                <li>Share recipes or print for cooking</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-item">
+                        <div class="feature-icon">👤</div>
+                        <div class="feature-details">
+                            <h4>Enhanced Profile & Gamification</h4>
+                            <p>Track your cooking journey with stats, achievements, and levels!</p>
+                            <ul>
+                                <li>XP system with chef levels (Novice to Master Chef)</li>
+                                <li>Dynamic statistics (recipes cooked, hours, streak)</li>
+                                <li>9 unlockable achievements with progress tracking</li>
+                                <li>Cuisine distribution chart (track what you cook)</li>
+                                <li>Recent activity feed & dietary preferences</li>
+                                <li>Allergy management system</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-item">
+                        <div class="feature-icon">🎥</div>
+                        <div class="feature-details">
+                            <h4>YouTube Video Detail Page</h4>
+                            <p>Comprehensive video pages with auto-extracted recipes!</p>
+                            <ul>
+                                <li>Embedded YouTube player with controls</li>
+                                <li>Auto-extracted ingredients from description</li>
+                                <li>Step-by-step instructions parsed automatically</li>
+                                <li>Save videos to favorites & add personal notes</li>
+                                <li>Related videos and download recipe as text</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-item">
+                        <div class="feature-icon">⏰</div>
+                        <div class="feature-details">
+                            <h4>Smart Timers</h4>
+                            <p>Set multiple named timers and never burn food again!</p>
+                            <ul>
+                                <li>Set timer: "Set a timer for 15 minutes"</li>
+                                <li>Named timers: "Set pasta timer for 10 minutes"</li>
+                                <li>View all active timers in sidebar</li>
+                                <li>Audio notifications when timer ends</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-item">
+                        <div class="feature-icon">🔄</div>
+                        <div class="feature-details">
+                            <h4>Unit Converter</h4>
+                            <p>Convert any cooking measurement instantly.</p>
+                            <ul>
+                                <li>Cups to tablespoons</li>
+                                <li>Grams to ounces</li>
+                                <li>Celsius to Fahrenheit</li>
+                                <li>And many more!</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-item">
+                        <div class="feature-icon">🔀</div>
+                        <div class="feature-details">
+                            <h4>Ingredient Substitutions</h4>
+                            <p>Out of an ingredient? Get smart substitution suggestions!</p>
+                            <ul>
+                                <li>Common ingredient swaps</li>
+                                <li>Dietary alternatives</li>
+                                <li>Emergency replacements</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-item">
+                        <div class="feature-icon">📜</div>
+                        <div class="feature-details">
+                            <h4>Conversation History</h4>
+                            <p>Review all your past conversations with filters and export.</p>
+                            <ul>
+                                <li>Search through history</li>
+                                <li>Filter by message type</li>
+                                <li>Export as JSON</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Voice Commands Tab -->
+            <div class="help-tab-content" id="voice-content">
+                <div class="voice-commands-intro">
+                    <h3>🎤 Voice Command Cheat Sheet</h3>
+                    <p>Just say these commands and watch the magic happen!</p>
+                </div>
+                
+                <div class="command-categories">
+                    <div class="command-category">
+                        <h4><i class="fas fa-play-circle"></i> Getting Started</h4>
+                        <div class="command-list">
+                            <div class="command-item">
+                                <span class="command-text">"Hey Kitchen"</span>
+                                <span class="command-desc">Activate hands-free mode</span>
+                            </div>
+                            <div class="command-item">
+                                <span class="command-text">"Help"</span>
+                                <span class="command-desc">Show this help menu</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="command-category">
+                        <h4><i class="fas fa-search"></i> Recipe Search</h4>
+                        <div class="command-list">
+                            <div class="command-item">
+                                <span class="command-text">"Find pasta recipes"</span>
+                                <span class="command-desc">Search for recipes</span>
+                            </div>
+                            <div class="command-item">
+                                <span class="command-text">"Show me chicken video"</span>
+                                <span class="command-desc">Search YouTube videos</span>
+                            </div>
+                            <div class="command-item">
+                                <span class="command-text">"Recipes with chicken and rice"</span>
+                                <span class="command-desc">Search by ingredients</span>
+                            </div>
+                            <div class="command-item">
+                                <span class="command-text">"Play video 2"</span>
+                                <span class="command-desc">Open video detail page</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="command-category">
+                        <h4><i class="fas fa-user"></i> Profile & Navigation</h4>
+                        <div class="command-list">
+                            <div class="command-item">
+                                <span class="command-text">Click Profile button</span>
+                                <span class="command-desc">View stats, XP & achievements</span>
+                            </div>
+                            <div class="command-item">
+                                <span class="command-text">Click any recipe result</span>
+                                <span class="command-desc">Open detailed recipe page</span>
+                            </div>
+                            <div class="command-item">
+                                <span class="command-text">Click any video result</span>
+                                <span class="command-desc">Open video detail page</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="command-category">
+                        <h4><i class="fas fa-clock"></i> Timers</h4>
+                        <div class="command-list">
+                            <div class="command-item">
+                                <span class="command-text">"Set a timer for 15 minutes"</span>
+                                <span class="command-desc">Create a timer</span>
+                            </div>
+                            <div class="command-item">
+                                <span class="command-text">"Set pasta timer for 10 minutes"</span>
+                                <span class="command-desc">Named timer</span>
+                            </div>
+                            <div class="command-item">
+                                <span class="command-text">"List timers"</span>
+                                <span class="command-desc">Show all active timers</span>
+                            </div>
+                            <div class="command-item">
+                                <span class="command-text">"Delete timer 1"</span>
+                                <span class="command-desc">Remove a timer</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="command-category">
+                        <h4><i class="fas fa-exchange-alt"></i> Conversions</h4>
+                        <div class="command-list">
+                            <div class="command-item">
+                                <span class="command-text">"Convert 2 cups to tablespoons"</span>
+                                <span class="command-desc">Unit conversion</span>
+                            </div>
+                            <div class="command-item">
+                                <span class="command-text">"How many ml in 1 cup"</span>
+                                <span class="command-desc">Quick conversion</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="command-category">
+                        <h4><i class="fas fa-random"></i> Substitutions</h4>
+                        <div class="command-list">
+                            <div class="command-item">
+                                <span class="command-text">"Substitute for eggs"</span>
+                                <span class="command-desc">Find alternatives</span>
+                            </div>
+                            <div class="command-item">
+                                <span class="command-text">"Replace butter in baking"</span>
+                                <span class="command-desc">Context-aware substitution</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="command-category">
+                        <h4><i class="fas fa-info-circle"></i> General</h4>
+                        <div class="command-list">
+                            <div class="command-item">
+                                <span class="command-text">"What time is it?"</span>
+                                <span class="command-desc">Get current time</span>
+                            </div>
+                            <div class="command-item">
+                                <span class="command-text">"What's today's date?"</span>
+                                <span class="command-desc">Get current date</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tips & Tricks Tab -->
+            <div class="help-tab-content" id="tips-content">
+                <div class="tips-intro">
+                    <h3>💡 Pro Tips to Master Your Kitchen Assistant</h3>
+                    <p>Level up your cooking game with these insider tricks!</p>
+                </div>
+                
+                <div class="tips-grid">
+                    <div class="tip-card">
+                        <div class="tip-number">1</div>
+                        <h4>Use Natural Language</h4>
+                        <p>Don't memorize commands! Just talk naturally like you're asking a friend.</p>
+                        <div class="tip-example">
+                            <span class="good">✅ "How do I make pasta?"</span>
+                            <span class="good">✅ "Show me pasta recipes"</span>
+                            <span class="good">✅ "Find me something with chicken"</span>
+                        </div>
+                    </div>
+                    
+                    <div class="tip-card">
+                        <div class="tip-number">2</div>
+                        <h4>Name Your Timers</h4>
+                        <p>Cooking multiple dishes? Name your timers so you don't get confused!</p>
+                        <div class="tip-example">
+                            <span class="good">✅ "Set pasta timer for 10 minutes"</span>
+                            <span class="good">✅ "Set cake timer for 30 minutes"</span>
+                        </div>
+                    </div>
+                    
+                    <div class="tip-card">
+                        <div class="tip-number">3</div>
+                        <h4>Explore Video Detail Pages</h4>
+                        <p>Click on any YouTube video result to see a beautiful detail page with ingredients, steps, and notes!</p>
+                        <div class="tip-example">
+                            <span class="good">✅ "Show me pasta video"</span>
+                            <span class="good">✅ Click any video card to open details</span>
+                            <span class="good">✅ Save videos to favorites & add notes</span>
+                        </div>
+                    </div>
+                    
+                    <div class="tip-card">
+                        <div class="tip-number">4</div>
+                        <h4>Track Your Progress</h4>
+                        <p>Visit your Profile to see XP, achievements, and cooking stats! Unlock achievements by trying new cuisines and cooking regularly.</p>
+                        <div class="tip-example">
+                            <span class="good">✅ Earn XP for each recipe you cook</span>
+                            <span class="good">✅ Track your cooking streak</span>
+                            <span class="good">✅ View cuisine distribution charts</span>
+                        </div>
+                    </div>
+                    
+                    <div class="tip-card">
+                        <div class="tip-number">5</div>
+                        <h4>Explore Recipe Details</h4>
+                        <p>Click on any recipe search result to get a complete detail page with ingredients, steps, and nutrition info!</p>
+                        <div class="tip-example">
+                            <span class="good">✅ Step-by-step cooking instructions</span>
+                            <span class="good">✅ Complete ingredient measurements</span>
+                            <span class="good">✅ Print or share recipes easily</span>
+                        </div>
+                    </div>
+                    
+                    <div class="tip-card">
+                        <div class="tip-number">6</div>
+                        <h4>Check Conversation History</h4>
+                        <p>Forgot a recipe you found yesterday? Click the <i class="fas fa-history"></i> button to review!</p>
+                    </div>
+                    
+                    <div class="tip-card">
+                        <div class="tip-number">7</div>
+                        <h4>Hands-Free Mode</h4>
+                        <p>Enable hands-free and just say "Hey Kitchen" - perfect when your hands are messy from cooking!</p>
+                    </div>
+                    
+                    <div class="tip-card">
+                        <div class="tip-number">8</div>
+                        <h4>Ask for Context</h4>
+                        <p>The AI understands context! Mention what you're cooking for better substitution suggestions.</p>
+                        <div class="tip-example">
+                            <span class="good">✅ "Substitute oil in tandoori chicken"</span>
+                            <span class="better">🌟 Better than just "substitute oil"</span>
+                        </div>
+                    </div>
+                    
+                    <div class="tip-card">
+                        <div class="tip-number">9</div>
+                        <h4>Download Video Recipes</h4>
+                        <p>On video detail pages, click "Download Recipe" to save ingredients and steps as a text file!</p>
+                    </div>
+                    
+                    <div class="tip-card">
+                        <div class="tip-number">10</div>
+                        <h4>Multiple Searches</h4>
+                        <p>You can search for recipes, watch videos, and set timers all in the same conversation!</p>
+                    </div>
+                    
+                    <div class="tip-card">
+                        <div class="tip-number">11</div>
+                        <h4>Adjust Settings</h4>
+                        <p>Click <i class="fas fa-cog"></i> to customize voice speed, volume, and more!</p>
+                    </div>
+                </div>
+                
+                <div class="tips-shortcuts">
+                    <h4>⌨️ Keyboard Shortcuts</h4>
+                    <div class="shortcut-list">
+                        <div class="shortcut-item">
+                            <kbd>Space</kbd>
+                            <span>Click & hold to talk (when mic is ready)</span>
+                        </div>
+                        <div class="shortcut-item">
+                            <kbd>Esc</kbd>
+                            <span>Close modals</span>
+                        </div>
+                        <div class="shortcut-item">
+                            <kbd>Enter</kbd>
+                            <span>Send typed message</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="help-footer">
+                <p>💬 Still have questions? Just ask me! I'm here to help!</p>
+                <button class="btn-close-help" onclick="closeHelpModal()">
+                    <i class="fas fa-check"></i> Got it!
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Tour Overlay -->
+    <div id="tour-overlay" class="tour-overlay">
+        <div class="tour-spotlight"></div>
+        <div class="tour-tooltip">
+            <div class="tour-tooltip-content">
+                <div class="tour-step-header">
+                    <span class="tour-step-number"></span>
+                    <button class="tour-skip-btn" onclick="skipTour()">
+                        <i class="fas fa-times"></i> Skip Tour
+                    </button>
+                </div>
+                <h3 class="tour-tooltip-title"></h3>
+                <p class="tour-tooltip-text"></p>
+                <div class="tour-tooltip-actions">
+                    <button class="tour-btn-prev" onclick="prevTourStep()">
+                        <i class="fas fa-arrow-left"></i> Back
+                    </button>
+                    <button class="tour-btn-next" onclick="nextTourStep()">
+                        Next <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Scripts -->
+    <script>
+        // User data from server
+        window.currentUser = {{ current_user.to_dict() | tojson | safe if current_user.is_authenticated else '{}' | tojson }};
+        console.log('Current user:', window.currentUser);
+    </script>
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    
+    <!-- UI Enhancements Script -->
+    <script src="{{ url_for('static', filename='js/ui-enhancements.js') }}"></script>
+    
+    <!-- UI Dynamic Enhancements -->
+    <script src="{{ url_for('static', filename='js/ui-enhancements-dynamic.js') }}"></script>
+    
+    <!-- Lazy Load System -->
+    <script src="{{ url_for('static', filename='js/lazy-load.js') }}"></script>
+    
+    <!-- Main Script -->
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>

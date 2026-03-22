@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <defs>
+    <linearGradient id="sageGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#86EFAC;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#68D391;stop-opacity:1" />
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Badge Background -->
+  <circle cx="100" cy="100" r="80" fill="url(#sageGradient)" filter="url(#glow)"/>
+  <circle cx="100" cy="100" r="70" fill="#FFFFFF" opacity="0.9"/>
+  <circle cx="100" cy="100" r="65" fill="none" stroke="url(#sageGradient)" stroke-width="3"/>
+  
+  <!-- Timer Icon -->
+  <g transform="translate(100, 100)" stroke="url(#sageGradient)" stroke-width="3" fill="none">
+    <circle cx="0" cy="5" r="25"/>
+    <line x1="0" y1="5" x2="0" y2="-10"/>
+    <line x1="0" y1="5" x2="12" y2="12"/>
+    <line x1="-8" y1="-15" x2="8" y2="-15" stroke-linecap="round"/>
+    <line x1="0" y1="-15" x2="0" y2="-20" stroke-linecap="round"/>
+  </g>
+  
+  <!-- Badge Ribbon -->
+  <path d="M70 160 L70 190 L100 175 L130 190 L130 160" fill="url(#sageGradient)" opacity="0.8"/>
+  
+  <!-- Title Text -->
+  <text x="100" y="60" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="#68D391">TIMER</text>
+  <text x="100" y="145" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="#68D391">PRO</text>
+</svg>

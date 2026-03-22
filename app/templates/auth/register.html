@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+{% block title %}Register | Hands-Free Kitchen{% endblock %}
+{% block head_extra %}<link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}" />{% endblock %}
+{% block body_class %}auth-body{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper-single" aria-labelledby="registerTitle">
+  <section class="auth-panel-centered">
+    <div class="auth-card" role="form" aria-describedby="registerIntro">
+      <svg class="auth-brand-icon" aria-hidden="true"><use href="#chef-hat" /></svg>
+      <h2 id="registerTitle" class="auth-title">Create Account</h2>
+      <p id="registerIntro" class="auth-subtitle">Join to access personalized recipes and voice control</p>
+      <div id="registerAlert" class="alert" role="alert" aria-live="polite"></div>
+      <form id="registerForm" novalidate autocomplete="on">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="firstName">First Name</label>
+            <input type="text" id="firstName" name="first_name" autocomplete="given-name" required />
+            <div class="inline-hint" id="firstNameHint">Enter your first name</div>
+          </div>
+          <div class="form-group">
+            <label for="lastName">Last Name</label>
+            <input type="text" id="lastName" name="last_name" autocomplete="family-name" required />
+            <div class="inline-hint" id="lastNameHint">Enter your last name</div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <input type="email" id="email" name="email" autocomplete="email" required aria-describedby="emailHint" />
+          <div class="inline-hint" id="emailHint">We'll never share your email.</div>
+        </div>
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input type="text" id="username" name="username" autocomplete="username" minlength="3" required aria-describedby="usernameHint" />
+          <div class="inline-hint" id="usernameHint">At least 3 characters.</div>
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <div class="input-wrapper">
+            <input type="password" id="password" name="password" autocomplete="new-password" minlength="8" required aria-describedby="passwordHint" />
+            <button type="button" class="toggle-password" data-target="password" aria-label="Show password">
+              <svg width="20" height="20"><use href="#eye"></use></svg>
+            </button>
+          </div>
+          <div class="password-strength" aria-hidden="true">
+            <div class="password-strength-bar" id="passwordStrengthBar" data-strength="none"></div>
+          </div>
+          <div class="inline-hint" id="passwordHint">Min 8 chars; mix cases & numbers.</div>
+        </div>
+        <div class="form-group">
+          <label for="confirmPassword">Confirm Password</label>
+          <div class="input-wrapper">
+            <input type="password" id="confirmPassword" name="confirm_password" autocomplete="new-password" minlength="8" required aria-describedby="confirmHint" />
+            <button type="button" class="toggle-password" data-target="confirmPassword" aria-label="Show password">
+              <svg width="20" height="20"><use href="#eye"></use></svg>
+            </button>
+          </div>
+          <div class="inline-hint" id="confirmHint">Must match the password.</div>
+        </div>
+        <fieldset class="form-group" aria-describedby="agreementHint">
+          <legend class="visually-hidden">Agreement</legend>
+          <div class="agreement" id="agreementHint" style="font-size:.7rem; line-height:1.4; color:var(--color-text-secondary);">By creating an account, you agree to our <a href="#" aria-label="View Terms of Service">Terms</a> and <a href="#" aria-label="View Privacy Policy">Privacy</a>.</div>
+        </fieldset>
+        <button type="submit" class="btn-primary" id="registerBtn">Create Account</button>
+        <div class="switch-auth" style="text-align:center; margin-top:var(--spacing-8); font-size:.85rem; color:var(--color-text-secondary);">Already have an account? <a href="/login" class="link-primary">Sign In</a></div>
+      </form>
+    </div>
+  </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+  {{ super() }}
+  <script>
+    (function(){
+      const scope = document.getElementById('registerForm');
+      if(!scope) return;
+      const alertBox = document.getElementById('registerAlert');
+      function showAlert(msg){
+        alertBox.textContent = msg;
+        alertBox.classList.add('show');
+      }
+      function clearAlert(){
+        alertBox.classList.remove('show');
+        alertBox.textContent='';
+      }
+      // Password toggles
+      scope.querySelectorAll('.toggle-password').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const target = document.getElementById(btn.dataset.target);
+          const isHidden = target.type === 'password';
+          target.type = isHidden ? 'text' : 'password';
+          btn.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password');
+          btn.innerHTML = `<svg width="20" height="20"><use href="#${isHidden ? 'eye-off' : 'eye'}"></use></svg>`;
+        });
+      });
+      const passwordInput = document.getElementById('password');
+      const confirmInput = document.getElementById('confirmPassword');
+      const strengthBar = document.getElementById('passwordStrengthBar');
+      function evaluateStrength(val){
+        let score=0;
+        if(val.length>=8) score++;
+        if(/[A-Z]/.test(val)) score++;
+        if(/[a-z]/.test(val)) score++;
+        if(/\d/.test(val)) score++;
+        if(/[^A-Za-z0-9]/.test(val)) score++;
+        if(score<=2) return 'weak';
+        if(score<=4) return 'medium';
+        return 'strong';
+      }
+      passwordInput.addEventListener('input',()=>{
+        const s = evaluateStrength(passwordInput.value);
+        strengthBar.setAttribute('data-strength', s);
+        strengthBar.classList.remove('field-error');
+      });
+      confirmInput.addEventListener('input',()=>{
+        if(confirmInput.value && confirmInput.value !== passwordInput.value){
+          confirmInput.classList.add('field-error');
+        } else {
+          confirmInput.classList.remove('field-error');
+        }
+      });
+      scope.addEventListener('submit', async e => {
+        e.preventDefault();
+        clearAlert();
+        if(passwordInput.value !== confirmInput.value){
+          showAlert('Passwords do not match');
+          confirmInput.classList.add('field-error');
+          return;
+        }
+        const data = {
+          first_name: scope.querySelector('#firstName').value.trim(),
+          last_name: scope.querySelector('#lastName').value.trim(),
+          email: scope.querySelector('#email').value.trim(),
+          username: scope.querySelector('#username').value.trim(),
+          password: passwordInput.value,
+          confirm_password: confirmInput.value
+        };
+        try {
+          const res = await fetch('/register', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data) });
+          const result = await res.json();
+          if(res.ok){
+            showAlert('Registration successful! Redirecting...');
+            setTimeout(()=>{ window.location.href='/login'; }, 1200);
+          } else {
+            showAlert(result.message || 'Registration failed.');
+          }
+        } catch(err){
+          showAlert('Network error. Please try again.');
+        }
+      });
+    })();
+  </script>
+  
+  <!-- SVG Icon Sprite -->
+  <svg style="display: none;" aria-hidden="true">
+    <symbol id="eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+      <circle cx="12" cy="12" r="3"></circle>
+    </symbol>
+    <symbol id="eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+      <line x1="1" y1="1" x2="23" y2="23"></line>
+    </symbol>
+  </svg>
+{% endblock %}

@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% block title %}Login • Kitchen Assistant AI{% endblock %}
+{% block head_extra %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}" />
+{% endblock %}
+{% block content %}
+<div class="auth-wrapper-single" aria-labelledby="loginTitle">
+  <section class="auth-panel-centered">
+    <div class="auth-card" aria-labelledby="loginTitle" aria-describedby="loginHeroLead">
+      <svg class="auth-brand-icon" aria-hidden="true"><use href="#chef-hat"></use></svg>
+      <h2 id="loginTitle" class="auth-title">Login</h2>
+      <p class="auth-subtitle">Enter your credentials to continue</p>
+      <div class="alert-region" aria-live="polite" aria-atomic="true">
+        <div id="alert" class="alert" role="alert"></div>
+      </div>
+      <form id="loginForm" novalidate>
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <div class="input-wrapper">
+            <input type="email" id="email" name="email" placeholder="you@example.com" autocomplete="email" required aria-describedby="emailHint" />
+          </div>
+          <div class="inline-hint" id="emailHint">Use the email you registered with.</div>
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <div class="input-wrapper">
+            <input type="password" id="password" name="password" placeholder="••••••••" autocomplete="current-password" required aria-describedby="passwordHint" />
+            <button type="button" id="togglePassword" class="toggle-password" aria-label="Show password">
+              <svg width="20" height="20"><use href="#eye"></use></svg>
+            </button>
+          </div>
+          <div class="password-strength" aria-hidden="true">
+            <div class="password-strength-bar" id="loginStrengthBar" data-strength="none"></div>
+          </div>
+          <div class="inline-hint" id="passwordHint">Minimum 8 characters.</div>
+        </div>
+        <div class="remember-forgot" style="display:none">
+          <label class="remember-me">
+            <input type="checkbox" id="remember" name="remember" />
+            <span>Remember me</span>
+          </label>
+          <a href="/forgot-password">Forgot password?</a>
+        </div>
+        <button type="submit" class="btn-primary" id="loginBtn">
+          <span id="btnText">Sign In</span>
+          <div class="loading-spinner" id="spinner"></div>
+        </button>
+      </form>
+      <div class="auth-footer">
+        Don't have an account? <a href="/register">Create one free</a>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/auth-enhancements.js') }}" defer></script>
+{% endblock %}

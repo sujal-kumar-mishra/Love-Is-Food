@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <defs>
+    <linearGradient id="tealGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#5EEAD4;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#14B8A6;stop-opacity:1" />
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Badge Background -->
+  <circle cx="100" cy="100" r="80" fill="url(#tealGradient)" filter="url(#glow)"/>
+  <circle cx="100" cy="100" r="70" fill="#FFFFFF" opacity="0.9"/>
+  <circle cx="100" cy="100" r="65" fill="none" stroke="url(#tealGradient)" stroke-width="3"/>
+  
+  <!-- Checkmark/Consistency Icon -->
+  <g transform="translate(100, 100)" stroke="url(#tealGradient)" stroke-width="5" fill="none" stroke-linecap="round">
+    <circle cx="0" cy="0" r="25" stroke-width="3"/>
+    <polyline points="-10,0 -3,10 12,-10" stroke-width="5"/>
+  </g>
+  
+  <!-- Badge Ribbon -->
+  <path d="M70 160 L70 190 L100 175 L130 190 L130 160" fill="url(#tealGradient)" opacity="0.8"/>
+  
+  <!-- Title Text -->
+  <text x="100" y="52" font-family="Arial, sans-serif" font-size="11" font-weight="bold" text-anchor="middle" fill="#14B8A6">CONSISTENCY</text>
+  <text x="100" y="145" font-family="Arial, sans-serif" font-size="13" font-weight="bold" text-anchor="middle" fill="#14B8A6">KING</text>
+</svg>

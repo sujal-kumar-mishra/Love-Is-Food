@@ -1,0 +1,687 @@
+/* ============================================
+   Kitchen Assistant - Modern Animations
+   Design System from Reference folder - Orange Theme
+   ============================================ */
+
+/* ============================================
+   CSS Custom Properties (Design System)
+   ============================================ */
+:root {
+    /* Colors - Orange/Sage Palette (Reference Design) */
+    --charcoal: #2D3748;
+    --cream: #F7FAFC;
+    --sage: #68D391;           /* Sage Green */
+    --copper: #ED8936;         /* Copper Orange - Primary */
+    --soft-gray: #E2E8F0;
+    --forest: #22543D;         /* Deep Forest */
+    --warm-white: #FEFEFE;
+    
+    /* Typography */
+    --font-playfair: 'Playfair Display', serif;
+    --font-inter: 'Inter', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+    
+    /* Animation Timings */
+    --transition-fast: 0.15s;
+    --transition-base: 0.3s;
+    --transition-slow: 0.6s;
+    --easing-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+    --easing-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+/* ============================================
+   Glassmorphism Effects
+   ============================================ */
+.glass-effect {
+    backdrop-filter: blur(10px);
+    background: rgba(247, 250, 252, 0.85);
+    border: 1px solid rgba(226, 232, 240, 0.5);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+}
+
+.glass-dark {
+    backdrop-filter: blur(10px);
+    background: rgba(45, 55, 72, 0.85);
+    border: 1px solid rgba(56, 178, 172, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+/* ============================================
+   Voice Feedback Animations
+   ============================================ */
+@keyframes pulse-glow {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+        box-shadow: 0 0 0 0 rgba(104, 211, 145, 0.7);
+    }
+    50% {
+        transform: scale(1.05);
+        opacity: 0.9;
+        box-shadow: 0 0 0 15px rgba(104, 211, 145, 0);
+    }
+}
+
+.voice-pulse {
+    animation: pulse-glow 2s infinite;
+}
+
+@keyframes ripple {
+    0% {
+        transform: scale(0.8);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(2.4);
+        opacity: 0;
+    }
+}
+
+.ripple-effect {
+    position: relative;
+    overflow: visible;
+}
+
+.ripple-effect::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    height: 100%;
+    border-radius: inherit;
+    background: rgba(104, 211, 145, 0.3);
+    animation: ripple 1.5s ease-out infinite;
+}
+
+/* Voice Waveform Animation */
+.voice-wave {
+    display: inline-block;
+    width: 4px;
+    height: 20px;
+    background: var(--sage);
+    margin: 0 2px;
+    border-radius: 2px;
+    animation: wave 1.2s ease-in-out infinite;
+    transform-origin: center;
+}
+
+.voice-wave:nth-child(1) { animation-delay: 0s; }
+.voice-wave:nth-child(2) { animation-delay: 0.1s; }
+.voice-wave:nth-child(3) { animation-delay: 0.2s; }
+.voice-wave:nth-child(4) { animation-delay: 0.3s; }
+.voice-wave:nth-child(5) { animation-delay: 0.4s; }
+
+@keyframes wave {
+    0%, 100% {
+        height: 20px;
+        background: var(--sage);
+    }
+    50% {
+        height: 40px;
+        background: var(--forest);
+    }
+}
+
+/* ============================================
+   Message Bubble Animations
+   ============================================ */
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.chat-bubble {
+    animation: slideInUp 0.4s var(--easing-smooth);
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.chat-message {
+    animation: slideInRight 0.4s var(--easing-smooth);
+}
+
+/* Typing Indicator */
+@keyframes typing-dot {
+    0%, 60%, 100% {
+        transform: translateY(0);
+        opacity: 0.4;
+    }
+    30% {
+        transform: translateY(-10px);
+        opacity: 1;
+    }
+}
+
+.typing-indicator {
+    display: inline-flex;
+    gap: 4px;
+    padding: 12px 20px;
+    background: var(--soft-gray);
+    border-radius: 18px;
+}
+
+.typing-dot {
+    width: 8px;
+    height: 8px;
+    background: var(--charcoal);
+    border-radius: 50%;
+    animation: typing-dot 1.4s ease-in-out infinite;
+}
+
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+/* ============================================
+   Card Hover Effects (3D Tilt)
+   ============================================ */
+.recipe-card,
+.result-card,
+.feature-card {
+    transition: all var(--transition-base) var(--easing-smooth);
+    transform-style: preserve-3d;
+    backface-visibility: hidden;
+    will-change: transform, box-shadow;
+}
+
+.recipe-card:hover,
+.result-card:hover,
+.feature-card:hover {
+    transform: translateY(-12px) rotateX(5deg) scale(1.02);
+    box-shadow: 0 20px 50px rgba(45, 55, 72, 0.15),
+                0 8px 16px rgba(104, 211, 145, 0.1);
+}
+
+.recipe-card:active,
+.result-card:active {
+    transform: translateY(-8px) scale(0.98);
+}
+
+/* Image Zoom on Hover */
+.card-image-container {
+    overflow: hidden;
+    border-radius: inherit;
+}
+
+.card-image {
+    transition: transform var(--transition-slow) var(--easing-smooth);
+    will-change: transform;
+}
+
+.recipe-card:hover .card-image,
+.result-card:hover .card-image {
+    transform: scale(1.1);
+}
+
+/* ============================================
+   Staggered Reveal Animations
+   ============================================ */
+@keyframes fadeInStagger {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.stagger-item {
+    animation: fadeInStagger 0.6s var(--easing-smooth) backwards;
+}
+
+.stagger-item:nth-child(1) { animation-delay: 0.05s; }
+.stagger-item:nth-child(2) { animation-delay: 0.1s; }
+.stagger-item:nth-child(3) { animation-delay: 0.15s; }
+.stagger-item:nth-child(4) { animation-delay: 0.2s; }
+.stagger-item:nth-child(5) { animation-delay: 0.25s; }
+.stagger-item:nth-child(6) { animation-delay: 0.3s; }
+.stagger-item:nth-child(7) { animation-delay: 0.35s; }
+.stagger-item:nth-child(8) { animation-delay: 0.4s; }
+
+/* ============================================
+   Loading States & Skeleton Screens
+   ============================================ */
+@keyframes shimmer {
+    0% {
+        background-position: -1000px 0;
+    }
+    100% {
+        background-position: 1000px 0;
+    }
+}
+
+.skeleton {
+    background: linear-gradient(
+        90deg,
+        var(--soft-gray) 0px,
+        #f0f4f8 40px,
+        var(--soft-gray) 80px
+    );
+    background-size: 1000px 100%;
+    animation: shimmer 2s infinite linear;
+    border-radius: 8px;
+}
+
+.skeleton-text {
+    height: 12px;
+    margin-bottom: 8px;
+}
+
+.skeleton-title {
+    height: 24px;
+    width: 70%;
+    margin-bottom: 16px;
+}
+
+.skeleton-card {
+    height: 300px;
+    border-radius: 16px;
+}
+
+/* Spinner Loading */
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.spinner {
+    display: inline-block;
+    width: 40px;
+    height: 40px;
+    border: 4px solid var(--soft-gray);
+    border-top-color: var(--sage);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+/* ============================================
+   Background Particle Effect
+   ============================================ */
+#p5-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    opacity: 0.4;
+    pointer-events: none;
+}
+
+/* ============================================
+   Gradient Text Effects
+   ============================================ */
+.gradient-text {
+    background: linear-gradient(135deg, var(--sage), var(--copper));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 700;
+}
+
+.gradient-text-animated {
+    background: linear-gradient(
+        90deg,
+        var(--sage),
+        var(--copper),
+        var(--forest),
+        var(--sage)
+    );
+    background-size: 300% 100%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: gradient-shift 3s ease infinite;
+}
+
+@keyframes gradient-shift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+/* ============================================
+   Button Hover Effects
+   ============================================ */
+.btn-primary {
+    position: relative;
+    overflow: hidden;
+    transition: all var(--transition-base) var(--easing-smooth);
+}
+
+.btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.btn-primary:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(104, 211, 145, 0.3);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+/* ============================================
+   Modal Animations
+   ============================================ */
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.modal-content {
+    animation: modalFadeIn 0.3s var(--easing-smooth);
+}
+
+@keyframes backdropFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.modal-backdrop {
+    animation: backdropFadeIn 0.3s ease;
+}
+
+/* ============================================
+   Notification Slide In
+   ============================================ */
+@keyframes slideInFromRight {
+    from {
+        opacity: 0;
+        transform: translateX(400px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.notification-enter {
+    animation: slideInFromRight 0.4s var(--easing-bounce);
+}
+
+@keyframes slideOutToRight {
+    from {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(400px);
+    }
+}
+
+.notification-exit {
+    animation: slideOutToRight 0.3s var(--easing-smooth) forwards;
+}
+
+/* ============================================
+   Progress Bar Animation
+   ============================================ */
+@keyframes progress {
+    from {
+        width: 0%;
+    }
+}
+
+.progress-bar {
+    animation: progress 1.5s var(--easing-smooth);
+}
+
+/* ============================================
+   Floating Animation (for Help Button)
+   ============================================ */
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+.float-animation {
+    animation: float 3s ease-in-out infinite;
+}
+
+/* ============================================
+   Status Bar Slide Down
+   ============================================ */
+@keyframes slideDown {
+    from {
+        transform: translateY(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.status-bar {
+    animation: slideDown 0.4s var(--easing-smooth);
+}
+
+/* ============================================
+   Fade In/Out Utilities
+   ============================================ */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+
+.fade-in {
+    animation: fadeIn 0.4s ease;
+}
+
+.fade-out {
+    animation: fadeOut 0.4s ease forwards;
+}
+
+/* ============================================
+   Scale In/Out Animations
+   ============================================ */
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.scale-in {
+    animation: scaleIn 0.3s var(--easing-bounce);
+}
+
+/* ============================================
+   Shake Animation (for errors)
+   ============================================ */
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+    20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+
+.shake {
+    animation: shake 0.5s ease;
+}
+
+/* ============================================
+   Heartbeat Animation (for notifications)
+   ============================================ */
+@keyframes heartbeat {
+    0%, 100% {
+        transform: scale(1);
+    }
+    10%, 30% {
+        transform: scale(1.1);
+    }
+    20%, 40% {
+        transform: scale(1);
+    }
+}
+
+.heartbeat {
+    animation: heartbeat 1.5s ease infinite;
+}
+
+/* ============================================
+   Glow Effect (for active elements)
+   ============================================ */
+@keyframes glow {
+    0%, 100% {
+        box-shadow: 0 0 5px var(--sage),
+                    0 0 10px var(--sage),
+                    0 0 15px var(--sage);
+    }
+    50% {
+        box-shadow: 0 0 10px var(--sage),
+                    0 0 20px var(--sage),
+                    0 0 30px var(--sage);
+    }
+}
+
+.glow-effect {
+    animation: glow 2s ease-in-out infinite;
+}
+
+/* ============================================
+   Smooth Scrolling
+   ============================================ */
+html {
+    scroll-behavior: smooth;
+}
+
+.smooth-scroll {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Custom Scrollbar */
+.smooth-scroll::-webkit-scrollbar {
+    width: 8px;
+}
+
+.smooth-scroll::-webkit-scrollbar-track {
+    background: var(--cream);
+}
+
+.smooth-scroll::-webkit-scrollbar-thumb {
+    background: var(--sage);
+    border-radius: 4px;
+}
+
+.smooth-scroll::-webkit-scrollbar-thumb:hover {
+    background: var(--forest);
+}
+
+/* ============================================
+   Responsive Animations (Reduce motion)
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* ============================================
+   Performance Optimizations
+   ============================================ */
+.will-change-transform {
+    will-change: transform;
+}
+
+.will-change-opacity {
+    will-change: opacity;
+}
+
+.gpu-accelerated {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    perspective: 1000px;
+}
+
+/* ============================================
+   Toast Notification Animations
+   ============================================ */
+@keyframes slideIn {
+    from {
+        transform: translateX(400px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOut {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(400px);
+        opacity: 0;
+    }
+}
+
+.note-card {
+    transition: all 0.3s ease;
+}
+
+.note-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(237, 137, 54, 0.2) !important;
+}

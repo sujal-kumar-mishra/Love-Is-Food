@@ -1,0 +1,1220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - Kitchen Assistant</title>
+    
+    <!-- Force browser to reload (cache busting) -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Core Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
+    
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'charcoal': '#2D3748',
+                        'cream': '#F7FAFC',
+                        'sage': '#68D391',
+                        'copper': '#ED8936',
+                        'soft-gray': '#E2E8F0',
+                        'forest': '#22543D'
+                    },
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                        'playfair': ['Playfair Display', 'serif'],
+                        'mono': ['JetBrains Mono', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        .profile-hero {
+            background: linear-gradient(135deg, rgba(45, 55, 72, 0.8), rgba(34, 84, 61, 0.6)), 
+                        url('{{ url_for("static", filename="images/chef-preparation.jpg") }}');
+            background-size: cover;
+            background-position: center;
+        }
+        
+        .preference-card {
+            transition: all 0.3s ease;
+        }
+        
+        .preference-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .achievement-badge {
+            background: linear-gradient(135deg, #68D391, #22543D);
+            color: white;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin: 0 auto;
+        }
+        
+        .level-progress-fill {
+            background: linear-gradient(90deg, #68D391 0%, #ED8936 50%, #F6E05E 100%);
+            box-shadow: 0 0 20px rgba(104, 211, 145, 0.6);
+        }
+        
+        .achievement-badge.locked {
+            filter: grayscale(100%);
+            opacity: 0.5;
+            position: relative;
+        }
+        
+        .achievement-badge.locked::after {
+            content: '\f023';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            position: absolute;
+            font-size: 0.8rem;
+        }
+        
+        .stats-chart {
+            height: 300px;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background-color: #68D391;
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        
+        .recipe-card-mini {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .recipe-card-mini:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(237, 137, 54, 0.2);
+        }
+        
+        .recipe-card {
+            transition: all 0.3s ease;
+        }
+        
+        .recipe-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+        }
+        
+        .allergy-tag {
+            transition: all 0.3s ease;
+        }
+    </style>
+</head>
+<body class="font-inter bg-cream text-charcoal">
+    
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 bg-white bg-opacity-95 backdrop-blur-md border-b border-soft-gray">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-4">
+                    <a href="{{ url_for('main.index') }}" class="text-2xl font-playfair font-bold bg-gradient-to-r from-sage to-copper bg-clip-text text-transparent">Kitchen Assistant</a>
+                </div>
+                
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="{{ url_for('main.index') }}" class="text-charcoal hover:text-sage transition-colors font-medium flex items-center space-x-2">
+                        <i class="fas fa-home"></i>
+                        <span>Home</span>
+                    </a>
+                    <!-- <a href="{{ url_for('main.index') }}#recipes" class="text-charcoal hover:text-sage transition-colors font-medium flex items-center space-x-2">
+                        <i class="fas fa-utensils"></i>
+                        <span>Recipes</span>
+                    </a> -->
+                    <a href="#" class="text-copper font-semibold flex items-center space-x-2">
+                        <i class="fas fa-user-circle"></i>
+                        <span>Profile</span>
+                    </a>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <button id="save-profile" class="bg-gradient-to-r from-sage to-forest text-white px-6 py-3 rounded-lg font-semibold shadow-lg transform hover:scale-105 transition-all duration-300 flex items-center space-x-2">
+                        <i class="fas fa-save"></i>
+                        <span>Save Changes</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Profile Hero -->
+    <section class="profile-hero pt-16 pb-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center space-x-6 text-white">
+                <!-- Avatar with Gradient -->
+                <div class="relative">
+                    <div class="w-32 h-32 rounded-full flex items-center justify-center text-4xl font-playfair font-bold bg-gradient-to-br from-sage via-forest to-copper shadow-2xl">
+                        {% if current_user and current_user.is_authenticated %}
+                            {{ current_user.username[0].upper() }}
+                        {% else %}
+                            CK
+                        {% endif %}
+                    </div>
+                    <!-- Level Badge on Avatar -->
+                    <div class="absolute -bottom-2 -right-2 bg-copper text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg" title="{{ stats.current_xp }} / {{ stats.max_xp }} XP">
+                        Lvl {{ stats.current_level }}
+                    </div>
+                </div>
+                
+                <div class="flex-1">
+                    <div class="flex items-center space-x-4 mb-2">
+                        <h1 class="text-3xl md:text-4xl font-playfair font-bold">
+                            {% if current_user and current_user.is_authenticated %}
+                                {{ current_user.username }}
+                            {% else %}
+                                Chef Kelly
+                            {% endif %}
+                        </h1>
+                        <span class="bg-sage bg-opacity-80 px-3 py-1 rounded-full text-sm font-semibold flex items-center space-x-1">
+                            <i class="fas fa-trophy"></i>
+                            <span>{{ stats.achievements_unlocked }} / {{ stats.achievements_total }} Achievements</span>
+                        </span>
+                    </div>
+                    
+                    <p class="text-lg text-gray-200 mb-3">
+                        <i class="fas fa-utensils mr-2"></i>Passionate home cook • {{ stats.recipes_cooked }} recipes cooked
+                    </p>
+                    
+                    <!-- XP Progress Bar -->
+                    <div class="max-w-md">
+                        <div class="flex items-center justify-between text-sm mb-1">
+                            <span class="font-semibold"><i class="fas fa-star mr-1"></i>Level {{ stats.current_level }} Chef</span>
+                            <span class="text-gray-300">{{ stats.current_xp }} / {{ stats.max_xp }} XP</span>
+                        </div>
+                        <div class="w-full bg-gray-700 bg-opacity-50 rounded-full h-3 overflow-hidden">
+                            <div id="level-progress" class="level-progress-fill h-full rounded-full transition-all duration-1000" style="width: {{ (stats.current_xp / stats.max_xp * 100)|round }}%"></div>
+                        </div>
+                        <p class="text-xs text-gray-300 mt-1">
+                            <i class="fas fa-arrow-up mr-1"></i>{{ stats.max_xp - stats.current_xp }} XP to Level {{ stats.current_level + 1 }}
+                        </p>
+                    </div>
+                    
+                    <!-- Badges -->
+                    <div class="flex items-center space-x-3 mt-4">
+                        <span class="bg-sage bg-opacity-90 px-4 py-2 rounded-lg text-sm font-semibold flex items-center space-x-2 shadow-lg">
+                            <i class="fas fa-microphone"></i>
+                            <span>Voice Master</span>
+                        </span>
+                        <span class="bg-copper bg-opacity-90 px-4 py-2 rounded-lg text-sm font-semibold flex items-center space-x-2 shadow-lg">
+                            <i class="fas fa-fire"></i>
+                            <span>{{ stats.current_streak }} Day Streak</span>
+                        </span>
+                        {% if stats.current_level >= 10 %}
+                        <span class="bg-purple-700 bg-opacity-90 px-4 py-2 rounded-lg text-sm font-semibold flex items-center space-x-2 shadow-lg">
+                            <i class="fas fa-gem"></i>
+                            <span>Master Chef</span>
+                        </span>
+                        {% elif stats.current_level >= 5 %}
+                        <span class="bg-yellow-500 bg-opacity-90 px-4 py-2 rounded-lg text-sm font-semibold flex items-center space-x-2 shadow-lg">
+                            <i class="fas fa-crown"></i>
+                            <span>Top Chef</span>
+                        </span>
+                        {% else %}
+                        <span class="bg-gray-100 px-4 py-2 rounded-lg text-sm font-semibold flex items-center space-x-2 shadow-sm text-charcoal">
+                            <i class="fas fa-seedling"></i>
+                            <span>Rising Chef</span>
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+            
+            <!-- Left Column - Preferences & Settings -->
+            <div class="lg:col-span-2 space-y-8">
+                
+                <!-- Dietary Preferences -->
+                <div class="bg-white rounded-2xl shadow-lg p-6">
+                    <h3 class="text-xl font-playfair font-semibold text-charcoal mb-6">
+                        <i class="fas fa-leaf text-sage mr-2"></i>Dietary Preferences
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="preference-card p-4 border-2 border-gray-200 rounded-lg bg-gradient-to-br from-white to-green-50">
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="flex items-center space-x-2">
+                                    <i class="fas fa-seedling text-sage"></i>
+                                    <h4 class="font-semibold text-charcoal">Vegetarian</h4>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="vegetarian-toggle" {{ 'checked' if user.preferences.get('vegetarian', False) else '' }}>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <p class="text-sm text-gray-600">Show only vegetarian recipes and suggest meat alternatives</p>
+                        </div>
+                        
+                        <div class="preference-card p-4 border-2 border-gray-200 rounded-lg bg-gradient-to-br from-white to-green-50">
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="flex items-center space-x-2">
+                                    <i class="fas fa-leaf text-forest"></i>
+                                    <h4 class="font-semibold text-charcoal">Vegan</h4>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="vegan-toggle" {{ 'checked' if user.preferences.get('vegan', False) else '' }}>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <p class="text-sm text-gray-600">Exclude all animal products from recommendations</p>
+                        </div>
+                        
+                        <div class="preference-card p-4 border-2 border-gray-200 rounded-lg bg-gradient-to-br from-white to-yellow-50">
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="flex items-center space-x-2">
+                                    <i class="fas fa-wheat-awn text-yellow-600"></i>
+                                    <h4 class="font-semibold text-charcoal">Gluten-Free</h4>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="gluten-free-toggle" {{ 'checked' if user.preferences.get('glutenFree', False) else '' }}>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <p class="text-sm text-gray-600">Filter recipes and suggest gluten-free alternatives</p>
+                        </div>
+                        
+                        <div class="preference-card p-4 border-2 border-gray-200 rounded-lg bg-gradient-to-br from-white to-orange-50">
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="flex items-center space-x-2">
+                                    <i class="fas fa-drumstick-bite text-copper"></i>
+                                    <h4 class="font-semibold text-charcoal">Keto</h4>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="keto-toggle" {{ 'checked' if user.preferences.get('keto', False) else '' }}>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <p class="text-sm text-gray-600">Low-carb, high-fat recipe recommendations</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Allergies -->
+                    <div class="mt-6 bg-red-50 border-2 border-red-200 rounded-lg p-4">
+                        <h4 class="font-semibold text-charcoal mb-3 flex items-center">
+                            <i class="fas fa-exclamation-triangle text-red-600 mr-2"></i>
+                            Allergies & Restrictions
+                        </h4>
+                        <div id="allergies-container" class="flex flex-wrap gap-2">
+                            <!-- Predefined allergy options -->
+                            {% set user_allergies = user.preferences.get('allergies', []) %}
+                            <button class="allergy-tag {{ 'bg-red-500 text-white' if 'nuts' in user_allergies else 'bg-red-100 text-red-800' }} px-4 py-2 rounded-full text-sm font-medium hover:bg-red-200 transition-colors border-2 border-red-200" data-allergy="nuts">
+                                <i class="fas fa-times-circle mr-1"></i> Nuts
+                            </button>
+                            <button class="allergy-tag {{ 'bg-red-500 text-white' if 'dairy' in user_allergies else 'bg-red-100 text-red-800' }} px-4 py-2 rounded-full text-sm font-medium hover:bg-red-200 transition-colors border-2 border-red-200" data-allergy="dairy">
+                                <i class="fas fa-times-circle mr-1"></i> Dairy
+                            </button>
+                            <button class="allergy-tag {{ 'bg-red-500 text-white' if 'shellfish' in user_allergies else 'bg-red-100 text-red-800' }} px-4 py-2 rounded-full text-sm font-medium hover:bg-red-200 transition-colors border-2 border-red-200" data-allergy="shellfish">
+                                <i class="fas fa-times-circle mr-1"></i> Shellfish
+                            </button>
+                            <button class="allergy-tag {{ 'bg-red-500 text-white' if 'eggs' in user_allergies else 'bg-red-100 text-red-800' }} px-4 py-2 rounded-full text-sm font-medium hover:bg-red-200 transition-colors border-2 border-red-200" data-allergy="eggs">
+                                <i class="fas fa-times-circle mr-1"></i> Eggs
+                            </button>
+                            <button class="allergy-tag {{ 'bg-red-500 text-white' if 'soy' in user_allergies else 'bg-red-100 text-red-800' }} px-4 py-2 rounded-full text-sm font-medium hover:bg-red-200 transition-colors border-2 border-red-200" data-allergy="soy">
+                                <i class="fas fa-times-circle mr-1"></i> Soy
+                            </button>
+                            
+                            <!-- Custom allergies added by user -->
+                            {% for allergy in user_allergies %}
+                                {% if allergy not in ['nuts', 'dairy', 'shellfish', 'eggs', 'soy'] %}
+                                <button class="allergy-tag bg-red-500 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-red-600 transition-colors border-2 border-red-400" data-allergy="{{ allergy }}" data-custom="true">
+                                    <i class="fas fa-times-circle mr-1"></i> {{ allergy.capitalize() }}
+                                </button>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            <!-- Add button -->
+                            <button id="add-allergy-btn" class="allergy-tag bg-gray-100 text-gray-600 px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-200 transition-colors border-2 border-gray-300">
+                                <i class="fas fa-plus-circle mr-1"></i> Add Allergy
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Cooking Preferences -->
+                <div class="bg-white rounded-2xl shadow-lg p-6">
+                    <h3 class="text-xl font-playfair font-semibold text-charcoal mb-6">
+                        <i class="fas fa-sliders-h text-copper mr-2"></i>Cooking Preferences
+                    </h3>
+                    <div class="space-y-6">
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <label class="block text-sm font-medium text-charcoal mb-2 flex items-center">
+                                <i class="fas fa-ruler text-sage mr-2"></i>Preferred Units
+                            </label>
+                            <select id="units-preference" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-sage focus:outline-none text-base">
+                                <option value="metric">Metric (grams, ml, °C)</option>
+                                <option value="imperial">Imperial (cups, oz, °F)</option>
+                                <option value="mixed">Mixed (cups, grams, °F)</option>
+                            </select>
+                        </div>
+                        
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <label class="block text-sm font-medium text-charcoal mb-2 flex items-center">
+                                <i class="fas fa-chart-line text-copper mr-2"></i>Cooking Skill Level
+                            </label>
+                            <select id="skill-level" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-sage focus:outline-none text-base">
+                                <option value="beginner">Beginner - Just starting out</option>
+                                <option value="intermediate">Intermediate - Some experience</option>
+                                <option value="advanced">Advanced - Very experienced</option>
+                                <option value="expert">Expert - Professional level</option>
+                            </select>
+                        </div>
+                        
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <label class="block text-sm font-medium text-charcoal mb-2">Preferred Cooking Time</label>
+                            <div class="flex items-center space-x-4">
+                                <input type="range" id="cooking-time-range" min="15" max="120" value="45" class="flex-1">
+                                <span id="cooking-time-display" class="font-mono text-lg text-sage font-semibold">45 min</span>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <label class="block text-sm font-medium text-charcoal">Voice Command Sensitivity</label>
+                                <p class="text-xs text-gray-600">Adjust how sensitive voice recognition is</p>
+                            </div>
+                            <select id="voice-sensitivity" class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sage focus:outline-none">
+                                <option value="low">Low</option>
+                                <option value="medium" selected>Medium</option>
+                                <option value="high">High</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Quick Stats Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <!-- Total Recipes -->
+                    <div class="bg-gradient-to-br from-sage to-forest rounded-2xl shadow-lg p-6 text-white transform hover:scale-105 transition-all duration-300">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 bg-white bg-opacity-30 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-book text-2xl"></i>
+                            </div>
+                            <span class="text-xs font-semibold bg-white bg-opacity-20 px-2 py-1 rounded-full">All Time</span>
+                        </div>
+                        <h4 class="text-3xl font-bold mb-1">{{ stats.recipes_cooked }}</h4>
+                        <p class="text-sm opacity-90">Total Recipes</p>
+                    </div>
+                    
+                    <!-- Cooking Hours -->
+                    <div class="bg-gradient-to-br from-copper to-orange-600 rounded-2xl shadow-lg p-6 text-white transform hover:scale-105 transition-all duration-300">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 bg-white bg-opacity-30 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-clock text-2xl"></i>
+                            </div>
+                            <span class="text-xs font-semibold bg-white bg-opacity-20 px-2 py-1 rounded-full">This Month</span>
+                        </div>
+                        <h4 class="text-3xl font-bold mb-1">{{ stats.cooking_hours }}</h4>
+                        <p class="text-sm opacity-90">Cooking Hours</p>
+                    </div>
+                    
+                    <!-- Perfect Scores -->
+                    <div class="bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-2xl shadow-lg p-6 text-white transform hover:scale-105 transition-all duration-300">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 bg-white bg-opacity-30 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-star text-2xl"></i>
+                            </div>
+                            <span class="text-xs font-semibold bg-white bg-opacity-20 px-2 py-1 rounded-full">Rating</span>
+                        </div>
+                        <h4 class="text-3xl font-bold mb-1">{{ stats.perfect_scores }}</h4>
+                        <p class="text-sm opacity-90">Perfect Scores</p>
+                    </div>
+                    
+                    <!-- Current Streak -->
+                    <div class="bg-gradient-to-br from-sage to-forest rounded-2xl shadow-lg p-6 text-white transform hover:scale-105 transition-all duration-300">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 bg-white bg-opacity-30 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-fire text-2xl"></i>
+                            </div>
+                            <span class="text-xs font-semibold bg-white bg-opacity-20 px-2 py-1 rounded-full">Active</span>
+                        </div>
+                        <h4 class="text-3xl font-bold mb-1">{{ stats.current_streak }}</h4>
+                        <p class="text-sm opacity-90">Day Streak</p>
+                    </div>
+                </div>
+                
+                <!-- Cooking Statistics -->
+                <div class="bg-white rounded-2xl shadow-lg p-6" style="display: none;">
+                    <h3 class="text-xl font-playfair font-semibold text-charcoal mb-6">Cooking Statistics</h3>
+                    <div class="stats-chart" id="stats-chart"></div>
+                </div>
+                
+                <!-- Cuisine Distribution -->
+                <div class="bg-white rounded-2xl shadow-lg p-6">
+                    <h3 class="text-xl font-playfair font-semibold text-charcoal mb-6">Cuisine Distribution</h3>
+                    <div class="stats-chart" id="cuisine-chart"></div>
+                </div>
+            </div>
+            
+            <!-- Right Column - Achievements & Collections -->
+            <div class="space-y-8">
+                
+                <!-- Achievements -->
+                <div class="bg-white rounded-2xl shadow-lg p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-xl font-playfair font-semibold text-charcoal">Achievements</h3>
+                        <span class="bg-sage text-white px-3 py-1 rounded-full text-xs font-bold">
+                            <i class="fas fa-trophy mr-1"></i>{{ stats.achievements_unlocked }}/{{ stats.achievements_total }} Unlocked
+                        </span>
+                    </div>
+                    
+                    <!-- Info Banner -->
+                    <div class="bg-blue-50 border-l-4 border-blue-500 p-3 mb-4 rounded">
+                        <p class="text-xs text-blue-800">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Complete challenges to unlock more achievements and earn XP!
+                        </p>
+                    </div>
+                    
+                    <div class="grid grid-cols-3 gap-4">
+                        {% for achievement in stats.achievements %}
+                        <div class="text-center achievement-item" data-achievement="{{ 'unlocked' if achievement.unlocked else 'locked' }}">
+                            <div class="achievement-badge {{ 'locked' if not achievement.unlocked else '' }} mb-2">
+                                {{ achievement.emoji }}
+                            </div>
+                            <p class="text-xs font-medium {{ 'text-charcoal' if achievement.unlocked else 'text-gray-400' }}">
+                                {{ achievement.name }}
+                            </p>
+                            <p class="text-xs {{ 'text-gray-600' if achievement.unlocked else 'text-gray-500' }}">
+                                {{ achievement.description }}
+                            </p>
+                            {% if not achievement.unlocked and achievement.progress > 0 %}
+                            <div class="mt-1 w-full bg-gray-200 rounded-full h-1">
+                                <div class="bg-sage h-1 rounded-full" style="width: {{ achievement.progress }}%"></div>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-1">{{ achievement.current }}/{{ achievement.threshold }}</p>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- Chef Levels Guide -->
+                <div class="bg-gradient-to-br from-copper to-orange-600 rounded-2xl shadow-lg p-6 text-white">
+                    <h3 class="text-xl font-playfair font-semibold mb-4 flex items-center">
+                        <i class="fas fa-graduation-cap mr-2"></i>
+                        Chef Levels Guide
+                    </h3>
+                    <p class="text-sm opacity-90 mb-6">Progress through chef levels by earning XP from cooking and completing challenges</p>
+                    
+                    <div class="space-y-3">
+                        <!-- Level Progression -->
+                        <div class="flex items-center space-x-3 bg-white bg-opacity-20 rounded-lg p-3">
+                            <div class="w-10 h-10 bg-white bg-opacity-30 rounded-full flex items-center justify-center font-bold">1</div>
+                            <div class="flex-1">
+                                <p class="font-semibold text-sm">Novice Chef</p>
+                                <p class="text-xs opacity-75">0-100 XP • Unlock basic recipes</p>
+                            </div>
+                            <i class="fas fa-check-circle text-green-300"></i>
+                        </div>
+                        
+                        <div class="flex items-center space-x-3 bg-white bg-opacity-20 rounded-lg p-3">
+                            <div class="w-10 h-10 bg-white bg-opacity-30 rounded-full flex items-center justify-center font-bold">2</div>
+                            <div class="flex-1">
+                                <p class="font-semibold text-sm">Home Cook</p>
+                                <p class="text-xs opacity-75">100-300 XP • Voice commands enabled</p>
+                            </div>
+                            <i class="fas fa-check-circle text-green-300"></i>
+                        </div>
+                        
+                        <div class="flex items-center space-x-3 bg-white bg-opacity-20 rounded-lg p-3">
+                            <div class="w-10 h-10 bg-white bg-opacity-30 rounded-full flex items-center justify-center font-bold">8</div>
+                            <div class="flex-1">
+                                <p class="font-semibold text-sm">Expert Chef</p>
+                                <p class="text-xs opacity-75">700-1000 XP • Advanced techniques unlocked</p>
+                            </div>
+                            <i class="fas fa-arrow-circle-right text-yellow-300 animate-pulse"></i>
+                        </div>
+                        
+                        <div class="flex items-center space-x-3 bg-white bg-opacity-10 rounded-lg p-3 opacity-60">
+                            <div class="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center font-bold">9</div>
+                            <div class="flex-1">
+                                <p class="font-semibold text-sm">Master Chef</p>
+                                <p class="text-xs opacity-75">1000-1500 XP • Premium recipes & features</p>
+                            </div>
+                            <i class="fas fa-lock"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Favorite Recipes -->
+                <div class="bg-white rounded-2xl shadow-lg p-6">
+                    <h3 class="text-xl font-playfair font-semibold text-charcoal mb-6">Favorite Recipes</h3>
+                    <div class="space-y-4" id="favorite-recipes">
+                        <!-- Favorite recipes will be populated by JavaScript -->
+                    </div>
+                </div>
+                
+                <!-- Recent Activity -->
+                <div class="bg-white rounded-2xl shadow-lg p-6">
+                    <h3 class="text-xl font-playfair font-semibold text-charcoal mb-6">
+                        <i class="fas fa-history text-sage mr-2"></i>Recent Activity
+                    </h3>
+                    <div class="space-y-3">
+                        {% if stats.recent_activity %}
+                            {% for activity in stats.recent_activity %}
+                            <div class="flex items-center space-x-3 p-4 bg-gradient-to-r from-{{ activity.color }}-50 to-white rounded-lg border-l-4 border-{{ activity.color }}-500 shadow-sm hover:shadow-md transition-shadow">
+                                <div class="w-12 h-12 bg-gradient-to-br from-{{ activity.color }}-400 to-{{ activity.color }}-600 rounded-full flex items-center justify-center text-white text-lg shadow-md">
+                                    <i class="fas {{ activity.icon }}"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-sm font-semibold text-charcoal">{{ activity.description }}</p>
+                                    <p class="text-xs text-gray-600"><i class="fas fa-clock mr-1"></i>{{ activity.time_ago }}</p>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="text-center py-8 text-gray-500">
+                                <i class="fas fa-inbox text-4xl mb-3"></i>
+                                <p class="text-sm">No recent activity yet. Start cooking to see your activity here!</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Data Management -->
+                <div class="bg-white rounded-2xl shadow-lg p-6" style="display: none;">
+                    <h3 class="text-xl font-playfair font-semibold text-charcoal mb-6">
+                        <i class="fas fa-shield-alt text-forest mr-2"></i>Data & Privacy
+                    </h3>
+                    <div class="space-y-4">
+                        <button class="w-full bg-gradient-to-r from-sage to-forest text-white py-3 px-4 rounded-lg font-semibold shadow-md transform hover:scale-105 transition-all duration-300 flex items-center justify-center space-x-2">
+                            <i class="fas fa-download"></i>
+                            <span>Export Recipe Collection</span>
+                        </button>
+                        <button class="w-full bg-gradient-to-r from-copper to-orange-600 text-white py-3 px-4 rounded-lg font-semibold shadow-md transform hover:scale-105 transition-all duration-300 flex items-center justify-center space-x-2">
+                            <i class="fas fa-upload"></i>
+                            <span>Import Recipes</span>
+                        </button>
+                        <button class="w-full bg-gradient-to-r from-gray-500 to-gray-600 text-white py-3 px-4 rounded-lg font-semibold shadow-md transform hover:scale-105 transition-all duration-300 flex items-center justify-center space-x-2">
+                            <i class="fas fa-broom"></i>
+                            <span>Clear Cooking History</span>
+                        </button>
+                        <button class="w-full bg-gradient-to-r from-red-500 to-red-600 text-white py-3 px-4 rounded-lg font-semibold shadow-md transform hover:scale-105 transition-all duration-300 flex items-center justify-center space-x-2">
+                            <i class="fas fa-trash-alt"></i>
+                            <span>Delete Account</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-charcoal text-white py-12 mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <div class="text-2xl font-playfair font-bold bg-gradient-to-r from-sage to-copper bg-clip-text text-transparent mb-4">Kitchen Assistant</div>
+            <p class="text-gray-400 mb-4">Your intelligent cooking companion powered by AI</p>
+            <p class="text-sm text-gray-500">© 2024 Kitchen Assistant. Crafted with passion for cooking.</p>
+        </div>
+    </footer>
+
+    <!-- Profile JavaScript -->
+    <script>
+        class ProfileManager {
+            constructor() {
+                this.preferences = {
+                    vegetarian: false,
+                    vegan: false,
+                    glutenFree: false,
+                    keto: false,
+                    allergies: [],
+                    units: 'metric',
+                    skillLevel: 'intermediate',
+                    cookingTime: 45,
+                    voiceSensitivity: 'medium'
+                };
+                
+                // Gamification stats - loaded from server
+                this.stats = {
+                    currentLevel: {{ stats.current_level }},
+                    currentXP: {{ stats.current_xp }},
+                    maxXP: {{ stats.max_xp }},
+                    totalRecipes: {{ stats.recipes_cooked }},
+                    cookingHours: {{ stats.cooking_hours }},
+                    perfectScores: {{ stats.perfect_scores }},
+                    currentStreak: {{ stats.current_streak }}
+                };
+                
+                this.favoriteRecipes = [];
+                
+                this.loadPreferences();
+                this.setupEventListeners();
+                this.loadFavoriteRecipes(); // Load from API instead of rendering hardcoded data
+                this.initializeStatsChart();
+                this.createCuisineChart();
+                this.animateAchievements();
+                this.updateLevelProgress();
+            }
+            
+            loadPreferences() {
+                // Load from localStorage or use defaults
+                const stored = localStorage.getItem('userPreferences');
+                if (stored) {
+                    this.preferences = { ...this.preferences, ...JSON.parse(stored) };
+                }
+                
+                // Apply preferences to UI
+                document.getElementById('vegetarian-toggle').checked = this.preferences.vegetarian;
+                document.getElementById('vegan-toggle').checked = this.preferences.vegan;
+                document.getElementById('gluten-free-toggle').checked = this.preferences.glutenFree;
+                document.getElementById('keto-toggle').checked = this.preferences.keto;
+                document.getElementById('units-preference').value = this.preferences.units;
+                document.getElementById('skill-level').value = this.preferences.skillLevel;
+                document.getElementById('cooking-time-range').value = this.preferences.cookingTime;
+                document.getElementById('cooking-time-display').textContent = `${this.preferences.cookingTime} min`;
+                document.getElementById('voice-sensitivity').value = this.preferences.voiceSensitivity;
+                
+                // Apply allergy tags
+                this.preferences.allergies.forEach(allergy => {
+                    const tag = document.querySelector(`[data-allergy="${allergy}"]`);
+                    if (tag) {
+                        tag.classList.add('bg-red-500', 'text-white');
+                        tag.classList.remove('bg-red-100', 'text-red-800');
+                    }
+                });
+            }
+            
+            setupEventListeners() {
+                // Toggle switches
+                document.getElementById('vegetarian-toggle')?.addEventListener('change', (e) => {
+                    this.preferences.vegetarian = e.target.checked;
+                    this.savePreferencesToServer();
+                });
+                
+                document.getElementById('vegan-toggle')?.addEventListener('change', (e) => {
+                    this.preferences.vegan = e.target.checked;
+                    this.savePreferencesToServer();
+                });
+                
+                document.getElementById('gluten-free-toggle')?.addEventListener('change', (e) => {
+                    this.preferences.glutenFree = e.target.checked;
+                    this.savePreferencesToServer();
+                });
+                
+                document.getElementById('keto-toggle')?.addEventListener('change', (e) => {
+                    this.preferences.keto = e.target.checked;
+                    this.savePreferencesToServer();
+                });
+                
+                // Select dropdowns
+                document.getElementById('units-preference')?.addEventListener('change', (e) => {
+                    this.preferences.units = e.target.value;
+                    this.savePreferencesToServer();
+                });
+                
+                document.getElementById('skill-level')?.addEventListener('change', (e) => {
+                    this.preferences.skillLevel = e.target.value;
+                    this.savePreferencesToServer();
+                });
+                
+                document.getElementById('voice-sensitivity')?.addEventListener('change', (e) => {
+                    this.preferences.voiceSensitivity = e.target.value;
+                    this.savePreferencesToServer();
+                });
+                
+                // Cooking time range
+                document.getElementById('cooking-time-range')?.addEventListener('input', (e) => {
+                    const value = e.target.value;
+                    this.preferences.cookingTime = parseInt(value);
+                    document.getElementById('cooking-time-display').textContent = `${value} min`;
+                    this.savePreferencesToServer();
+                });
+                
+                // Allergy tags - attach to all existing tags
+                document.querySelectorAll('.allergy-tag').forEach(tag => {
+                    if (tag.id !== 'add-allergy-btn') {
+                        tag.addEventListener('click', () => this.toggleAllergy(tag));
+                    }
+                });
+                
+                // Add allergy button
+                document.getElementById('add-allergy-btn')?.addEventListener('click', () => this.addCustomAllergy());
+                
+                // Save profile button
+                document.getElementById('save-profile')?.addEventListener('click', () => this.saveProfile());
+            }
+            
+            toggleAllergy(tag) {
+                const allergy = tag.dataset.allergy;
+                
+                // Don't process the add button here
+                if (tag.id === 'add-allergy-btn') {
+                    return;
+                }
+                
+                const isCustom = tag.dataset.custom === 'true';
+                const isActive = tag.classList.contains('bg-red-500');
+                
+                if (isActive) {
+                    // Remove allergy
+                    this.preferences.allergies = this.preferences.allergies.filter(a => a !== allergy);
+                    
+                    if (isCustom) {
+                        // Remove custom allergy tag from DOM
+                        tag.remove();
+                    } else {
+                        // Just change color for predefined allergies
+                        tag.classList.remove('bg-red-500', 'text-white');
+                        tag.classList.add('bg-red-100', 'text-red-800');
+                    }
+                } else {
+                    // Add allergy
+                    if (!this.preferences.allergies.includes(allergy)) {
+                        this.preferences.allergies.push(allergy);
+                    }
+                    tag.classList.add('bg-red-500', 'text-white');
+                    tag.classList.remove('bg-red-100', 'text-red-800');
+                }
+                
+                this.savePreferencesToServer();
+            }
+            
+            addCustomAllergy() {
+                const allergyName = prompt('Enter allergy name:');
+                if (!allergyName || allergyName.trim() === '') {
+                    return;
+                }
+                
+                const normalizedAllergy = allergyName.trim().toLowerCase();
+                
+                // Check if already exists
+                if (this.preferences.allergies.includes(normalizedAllergy)) {
+                    alert('This allergy is already in your list.');
+                    return;
+                }
+                
+                // Add to preferences
+                this.preferences.allergies.push(normalizedAllergy);
+                
+                // Create new tag element
+                const container = document.getElementById('allergies-container');
+                const addButton = document.getElementById('add-allergy-btn');
+                
+                const newTag = document.createElement('button');
+                newTag.className = 'allergy-tag bg-red-500 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-red-600 transition-colors border-2 border-red-400';
+                newTag.dataset.allergy = normalizedAllergy;
+                newTag.dataset.custom = 'true';
+                newTag.innerHTML = `<i class="fas fa-times-circle mr-1"></i> ${allergyName.trim()}`;
+                
+                // Add click event
+                newTag.addEventListener('click', () => this.toggleAllergy(newTag));
+                
+                // Insert before add button
+                container.insertBefore(newTag, addButton);
+                
+                // Save to server
+                this.savePreferencesToServer();
+                this.showNotification(`Added allergy: ${allergyName}`, 'success');
+            }
+            
+            savePreferencesToServer() {
+                // Save to localStorage for immediate use
+                localStorage.setItem('userPreferences', JSON.stringify(this.preferences));
+                
+                // Save to server database
+                fetch('/api/user/preferences', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        preferences: this.preferences
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        console.log('✅ Preferences saved to server');
+                    } else {
+                        console.error('❌ Failed to save preferences:', data.message);
+                        this.showNotification('Failed to save preferences', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('❌ Error saving preferences:', error);
+                    this.showNotification('Error saving preferences', 'error');
+                });
+            }
+            
+            saveProfile() {
+                this.savePreferencesToServer();
+                
+                // Show success message
+                const button = document.getElementById('save-profile');
+                if (button) {
+                    const originalText = button.textContent;
+                    button.textContent = 'Saved!';
+                    button.classList.add('bg-green-500');
+                    button.classList.remove('bg-sage');
+                    
+                    setTimeout(() => {
+                        button.textContent = originalText;
+                        button.classList.remove('bg-green-500');
+                        button.classList.add('bg-sage');
+                    }, 2000);
+                }
+                
+                // Show notification
+                this.showNotification('Profile saved successfully!', 'success');
+            }
+            
+            initializeStatsChart() {
+                const chartDom = document.getElementById('stats-chart');
+                if (!chartDom || !window.echarts) return;
+                
+                const myChart = echarts.init(chartDom);
+                const option = {
+                    title: {
+                        text: 'Cooking Activity',
+                        left: 'center',
+                        textStyle: { color: '#2D3748' }
+                    },
+                    tooltip: {
+                        trigger: 'axis'
+                    },
+                    legend: {
+                        data: ['Recipes Cooked', 'New Recipes Tried', 'Perfect Scores'],
+                        top: '10%'
+                    },
+                    grid: {
+                        left: '3%',
+                        right: '4%',
+                        bottom: '3%',
+                        containLabel: true
+                    },
+                    xAxis: {
+                        type: 'category',
+                        boundaryGap: false,
+                        data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+                    },
+                    yAxis: {
+                        type: 'value'
+                    },
+                    series: [
+                        {
+                            name: 'Recipes Cooked',
+                            type: 'line',
+                            data: [5, 8, 6, 10, 7, 12, 9],
+                            smooth: true,
+                            itemStyle: { color: '#68D391' }
+                        },
+                        {
+                            name: 'New Recipes Tried',
+                            type: 'line',
+                            data: [2, 3, 2, 4, 3, 5, 4],
+                            smooth: true,
+                            itemStyle: { color: '#ED8936' }
+                        },
+                        {
+                            name: 'Perfect Scores',
+                            type: 'line',
+                            data: [1, 2, 1, 3, 2, 4, 3],
+                            smooth: true,
+                            itemStyle: { color: '#4299E1' }
+                        }
+                    ]
+                };
+                
+                myChart.setOption(option);
+                window.addEventListener('resize', () => myChart.resize());
+            }
+            
+            renderFavoriteRecipes() {
+                const container = document.getElementById('favorite-recipes');
+                if (!container) return;
+                
+                container.innerHTML = '';
+                
+                this.favoriteRecipes.forEach(recipe => {
+                    const card = document.createElement('div');
+                    card.className = 'recipe-card flex items-center space-x-3 p-3 border border-gray-200 rounded-lg cursor-pointer';
+                    card.onclick = () => this.openRecipe(recipe);
+                    
+                    card.innerHTML = `
+                        <img src="${recipe.recipe_image || recipe.image}" alt="${recipe.recipe_title || recipe.title}" class="w-12 h-12 object-cover rounded-lg" onerror="this.src='/static/images/default-recipe.jpg'">
+                        <div class="flex-1">
+                            <h4 class="font-medium text-charcoal text-sm">${recipe.recipe_title || recipe.title}</h4>
+                            <div class="flex items-center space-x-1">
+                                <span class="text-xs text-gray-600"><i class="fas fa-utensils mr-1"></i>${recipe.recipe_source || 'Recipe'}</span>
+                            </div>
+                        </div>
+                    `;
+                    
+                    container.appendChild(card);
+                });
+                
+                // Show empty state if no favorites
+                if (this.favoriteRecipes.length === 0) {
+                    container.innerHTML = `
+                        <div class="text-center py-8 text-gray-500">
+                            <i class="fas fa-heart-broken text-4xl mb-3"></i>
+                            <p class="text-sm">No favorite recipes yet. Start adding recipes to your favorites!</p>
+                        </div>
+                    `;
+                }
+            }
+            
+            async loadFavoriteRecipes() {
+                const container = document.getElementById('favorite-recipes');
+                if (!container) return;
+                
+                try {
+                    // Show loading state
+                    container.innerHTML = `
+                        <div class="text-center py-8 text-gray-500">
+                            <i class="fas fa-spinner fa-spin text-4xl mb-3"></i>
+                            <p class="text-sm">Loading your favorites...</p>
+                        </div>
+                    `;
+                    
+                    const response = await fetch('/api/favorites');
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        this.favoriteRecipes = data.favorites || [];
+                        this.renderFavoriteRecipes();
+                    } else {
+                        throw new Error(data.error || 'Failed to load favorites');
+                    }
+                } catch (error) {
+                    console.error('Error loading favorites:', error);
+                    container.innerHTML = `
+                        <div class="text-center py-8 text-red-500">
+                            <i class="fas fa-exclamation-circle text-4xl mb-3"></i>
+                            <p class="text-sm">Failed to load favorites. Please try again later.</p>
+                        </div>
+                    `;
+                }
+            }
+            
+            renderStars(rating) {
+                const fullStars = Math.floor(rating);
+                let stars = '';
+                
+                for (let i = 0; i < 5; i++) {
+                    if (i < fullStars) {
+                        stars += '<span class="text-yellow-400">★</span>';
+                    } else {
+                        stars += '<span class="text-gray-300">★</span>';
+                    }
+                }
+                
+                return stars;
+            }
+            
+            openRecipe(recipe) {
+                // If recipe has a watch_url (YouTube link), open it in a new tab
+                if (recipe.recipe_watch_url) {
+                    window.open(recipe.recipe_watch_url, '_blank', 'noopener,noreferrer');
+                    return;
+                }
+                
+                // Otherwise, navigate to internal recipe page
+                const recipeId = recipe.recipe_id || recipe.id;
+                
+                // Determine the route based on recipe source
+                if (recipeId.toString().startsWith('video_')) {
+                    // YouTube video
+                    const videoId = recipeId.replace('video_', '');
+                    window.location.href = `/video/${videoId}`;
+                } else if (recipeId.toString().startsWith('ai_')) {
+                    // AI recipe
+                    window.location.href = `/recipe/${recipeId}`;
+                } else {
+                    // Regular recipe (Spoonacular/TheMealDB)
+                    window.location.href = `/recipe/${recipeId}`;
+                }
+            }
+            
+            showNotification(message, type = 'info') {
+                console.log(`${type.toUpperCase()}: ${message}`);
+            }
+            
+            updateLevelProgress() {
+                // Animate XP progress bar
+                const progressBar = document.getElementById('level-progress');
+                if (progressBar) {
+                    const progress = (this.stats.currentXP / this.stats.maxXP) * 100;
+                    setTimeout(() => {
+                        progressBar.style.width = `${progress}%`;
+                    }, 300);
+                }
+            }
+            
+            animateAchievements() {
+                // Animate achievement badges on page load
+                if (typeof anime === 'undefined') return;
+                
+                anime({
+                    targets: '.achievement-item[data-achievement="unlocked"] .achievement-badge',
+                    scale: [0, 1],
+                    rotate: [0, 360],
+                    duration: 800,
+                    delay: anime.stagger(100),
+                    easing: 'easeOutElastic(1, .8)'
+                });
+            }
+            
+            createCuisineChart() {
+                // Create pie chart for cuisine distribution
+                const chartDom = document.getElementById('cuisine-chart');
+                if (!chartDom || !window.echarts) return;
+                
+                const myChart = echarts.init(chartDom);
+                
+                // Get cuisine distribution from server data
+                const cuisineData = {{ stats.cuisine_distribution | tojson }};
+                
+                // Define colors for different cuisines
+                const cuisineColors = {
+                    'Italian': '#ED8936',
+                    'Indian': '#68D391',
+                    'Chinese': '#22543D',
+                    'Mexican': '#F6AD55',
+                    'Japanese': '#9AE6B4',
+                    'American': '#4299E1',
+                    'French': '#ED64A6',
+                    'Thai': '#F6E05E',
+                    'Mediterranean': '#48BB78',
+                    'Other': '#CBD5E0'
+                };
+                
+                // Convert cuisine data to chart format
+                const chartData = Object.entries(cuisineData).map(([name, value]) => ({
+                    value: value,
+                    name: name,
+                    itemStyle: { color: cuisineColors[name] || '#CBD5E0' }
+                }));
+                
+                // Show message if no data
+                if (chartData.length === 0) {
+                    chartData.push({ 
+                        value: 1, 
+                        name: 'No cuisine data yet', 
+                        itemStyle: { color: '#CBD5E0' } 
+                    });
+                }
+                
+                const option = {
+                    tooltip: {
+                        trigger: 'item',
+                        formatter: '{b}: {c} recipes ({d}%)'
+                    },
+                    legend: {
+                        orient: 'vertical',
+                        left: 'left',
+                        textStyle: {
+                            fontSize: 12
+                        }
+                    },
+                    series: [{
+                        name: 'Cuisine',
+                        type: 'pie',
+                        radius: ['40%', '70%'],
+                        avoidLabelOverlap: false,
+                        itemStyle: {
+                            borderRadius: 10,
+                            borderColor: '#fff',
+                            borderWidth: 2
+                        },
+                        label: {
+                            show: false
+                        },
+                        emphasis: {
+                            label: {
+                                show: true,
+                                fontSize: 14,
+                                fontWeight: 'bold'
+                            }
+                        },
+                        data: chartData
+                    }]
+                };
+                
+                myChart.setOption(option);
+                window.addEventListener('resize', () => myChart.resize());
+            }
+        }
+        
+        // Initialize profile manager when DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            new ProfileManager();
+        });
+    </script>
+    
+    <!-- Socket.IO for Voice Control TTS -->
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    
+    <!-- Global Voice Control -->
+    <script src="{{ url_for('static', filename='js/voice-control-global.js') }}"></script>
+</body>
+</html>
+

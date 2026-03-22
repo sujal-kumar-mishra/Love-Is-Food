@@ -1,0 +1,334 @@
+/* ============================================
+   UNIVERSAL COLOR SYSTEM
+   Love-Is-Food Kitchen Assistant
+   ============================================
+   
+   This file defines the complete color token system
+   for consistent theming across the entire application.
+   
+   Usage:
+   - Use semantic variables (--color-primary, --color-bg-card)
+   - Never hardcode hex values in templates
+   - Reference gradients via var(--gradient-primary)
+   ============================================ */
+
+:root {
+  /* ============================================
+     BRAND COLOR SCALES (50-900)
+     ============================================ */
+  
+  /* Copper Orange - Primary Brand Color */
+  --color-copper-50: #FFF5F0;
+  --color-copper-100: #FFE8DC;
+  --color-copper-200: #FFD1B8;
+  --color-copper-300: #FFB594;
+  --color-copper-400: #FF9970;
+  --color-copper-500: #ED8936;  /* Base Copper */
+  --color-copper-600: #D97121;
+  --color-copper-700: #B85A1A;
+  --color-copper-800: #974513;
+  --color-copper-900: #6B300D;
+  
+  /* Sage Green - Secondary Brand Color */
+  --color-sage-50: #F0FDF4;
+  --color-sage-100: #DCFCE7;
+  --color-sage-200: #BBF7D0;
+  --color-sage-300: #86EFAC;
+  --color-sage-400: #68D391;  /* Base Sage */
+  --color-sage-500: #4ADE80;
+  --color-sage-600: #22C55E;
+  --color-sage-700: #16A34A;
+  --color-sage-800: #15803D;
+  --color-sage-900: #14532D;
+  
+  /* Charcoal - Neutral Dark */
+  --color-charcoal-50: #F8FAFC;
+  --color-charcoal-100: #F1F5F9;
+  --color-charcoal-200: #E2E8F0;
+  --color-charcoal-300: #CBD5E1;
+  --color-charcoal-400: #94A3B8;
+  --color-charcoal-500: #64748B;
+  --color-charcoal-600: #475569;
+  --color-charcoal-700: #334155;
+  --color-charcoal-800: #2D3748;  /* Base Charcoal */
+  --color-charcoal-900: #1E293B;
+  
+  /* Cream - Neutral Light */
+  --color-cream-50: #FFFFFF;
+  --color-cream-100: #F7FAFC;  /* Base Cream */
+  --color-cream-200: #EDF2F7;
+  --color-cream-300: #E2E8F0;
+  --color-cream-400: #CBD5E0;
+  --color-cream-500: #A0AEC0;
+  
+  /* ============================================
+     SEMANTIC COLOR MAPPINGS
+     ============================================ */
+  
+  /* Primary Colors */
+  --color-primary: var(--color-copper-500);
+  --color-primary-light: var(--color-copper-400);
+  --color-primary-dark: var(--color-copper-600);
+  --color-primary-hover: var(--color-copper-600);
+  --color-primary-focus: var(--color-copper-700);
+  
+  /* Secondary Colors */
+  --color-secondary: var(--color-sage-400);
+  --color-secondary-light: var(--color-sage-300);
+  --color-secondary-dark: var(--color-sage-600);
+  --color-secondary-hover: var(--color-sage-500);
+  --color-secondary-focus: var(--color-sage-700);
+  
+  /* Background Colors */
+  --color-bg-primary: var(--color-cream-100);
+  --color-bg-secondary: var(--color-cream-50);
+  --color-bg-tertiary: var(--color-cream-200);
+  --color-bg-card: var(--color-cream-50);
+  --color-bg-card-hover: var(--color-cream-100);
+  --color-bg-overlay: rgba(45, 55, 72, 0.6);
+  --color-bg-modal: rgba(45, 55, 72, 0.8);
+  
+  /* Text Colors */
+  --color-text-primary: var(--color-charcoal-800);
+  --color-text-secondary: var(--color-charcoal-600);
+  --color-text-tertiary: var(--color-charcoal-500);
+  --color-text-muted: var(--color-charcoal-400);
+  --color-text-inverse: var(--color-cream-50);
+  --color-text-link: var(--color-copper-600);
+  --color-text-link-hover: var(--color-copper-700);
+  
+  /* Border Colors */
+  --color-border-light: var(--color-charcoal-200);
+  --color-border-medium: var(--color-charcoal-300);
+  --color-border-strong: var(--color-charcoal-400);
+  --color-border-primary: var(--color-copper-500);
+  --color-border-secondary: var(--color-sage-400);
+  
+  /* Status Colors */
+  --color-success: var(--color-sage-500);
+  --color-success-light: var(--color-sage-100);
+  --color-success-dark: var(--color-sage-700);
+  
+  --color-warning: #F59E0B;
+  --color-warning-light: #FEF3C7;
+  --color-warning-dark: #D97706;
+  
+  --color-error: #EF4444;
+  --color-error-light: #FEE2E2;
+  --color-error-dark: #DC2626;
+  
+  --color-info: #3B82F6;
+  --color-info-light: #DBEAFE;
+  --color-info-dark: #2563EB;
+  
+  /* Interactive States */
+  --color-hover-overlay: rgba(237, 137, 54, 0.08);
+  --color-active-overlay: rgba(237, 137, 54, 0.16);
+  --color-focus-ring: rgba(237, 137, 54, 0.5);
+  --color-disabled-bg: var(--color-charcoal-200);
+  --color-disabled-text: var(--color-charcoal-400);
+  
+  /* ============================================
+     GRADIENT SYSTEM
+     ============================================ */
+  
+  /* Primary Gradients */
+  --gradient-primary: linear-gradient(135deg, var(--color-copper-500) 0%, var(--color-copper-600) 100%);
+  --gradient-primary-soft: linear-gradient(135deg, var(--color-copper-400) 0%, var(--color-copper-500) 100%);
+  --gradient-primary-vibrant: linear-gradient(135deg, var(--color-copper-400) 0%, var(--color-copper-700) 100%);
+  
+  /* Secondary Gradients */
+  --gradient-secondary: linear-gradient(135deg, var(--color-sage-400) 0%, var(--color-sage-600) 100%);
+  --gradient-secondary-soft: linear-gradient(135deg, var(--color-sage-300) 0%, var(--color-sage-500) 100%);
+  
+  /* Brand Gradients (Copper to Sage) */
+  --gradient-brand: linear-gradient(135deg, var(--color-copper-500) 0%, var(--color-sage-400) 100%);
+  --gradient-brand-reverse: linear-gradient(135deg, var(--color-sage-400) 0%, var(--color-copper-500) 100%);
+  --gradient-brand-vibrant: linear-gradient(135deg, var(--color-copper-400) 0%, var(--color-sage-500) 100%);
+  
+  /* Neutral Gradients */
+  --gradient-neutral: linear-gradient(135deg, var(--color-charcoal-100) 0%, var(--color-cream-100) 100%);
+  --gradient-neutral-dark: linear-gradient(135deg, var(--color-charcoal-800) 0%, var(--color-charcoal-900) 100%);
+  
+  /* Overlay Gradients */
+  --gradient-overlay-top: linear-gradient(to bottom, rgba(45, 55, 72, 0.8) 0%, transparent 100%);
+  --gradient-overlay-bottom: linear-gradient(to top, rgba(45, 55, 72, 0.8) 0%, transparent 100%);
+  --gradient-overlay-radial: radial-gradient(circle at center, transparent 0%, rgba(45, 55, 72, 0.6) 100%);
+  
+  /* Glassmorphism Gradients */
+  --gradient-glass: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.15) 0%, 
+    rgba(255, 255, 255, 0.05) 100%);
+  --gradient-glass-copper: linear-gradient(135deg, 
+    rgba(237, 137, 54, 0.15) 0%, 
+    rgba(237, 137, 54, 0.05) 100%);
+  --gradient-glass-sage: linear-gradient(135deg, 
+    rgba(104, 211, 145, 0.15) 0%, 
+    rgba(104, 211, 145, 0.05) 100%);
+  
+  /* ============================================
+     SHADOW SYSTEM
+     ============================================ */
+  
+  /* Neutral Shadows */
+  --shadow-xs: 0 1px 2px 0 rgba(45, 55, 72, 0.05);
+  --shadow-sm: 0 1px 3px 0 rgba(45, 55, 72, 0.1), 0 1px 2px 0 rgba(45, 55, 72, 0.06);
+  --shadow-md: 0 4px 6px -1px rgba(45, 55, 72, 0.1), 0 2px 4px -1px rgba(45, 55, 72, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(45, 55, 72, 0.1), 0 4px 6px -2px rgba(45, 55, 72, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(45, 55, 72, 0.1), 0 10px 10px -5px rgba(45, 55, 72, 0.04);
+  --shadow-2xl: 0 25px 50px -12px rgba(45, 55, 72, 0.25);
+  
+  /* Colored Shadows */
+  --shadow-primary: 0 10px 20px -5px rgba(237, 137, 54, 0.3);
+  --shadow-primary-lg: 0 20px 30px -10px rgba(237, 137, 54, 0.4);
+  --shadow-secondary: 0 10px 20px -5px rgba(104, 211, 145, 0.3);
+  --shadow-secondary-lg: 0 20px 30px -10px rgba(104, 211, 145, 0.4);
+  
+  /* Inner Shadows */
+  --shadow-inner: inset 0 2px 4px 0 rgba(45, 55, 72, 0.06);
+  --shadow-inner-strong: inset 0 4px 8px 0 rgba(45, 55, 72, 0.12);
+  
+  /* Glow Effects */
+  --glow-primary: 0 0 20px rgba(237, 137, 54, 0.5);
+  --glow-secondary: 0 0 20px rgba(104, 211, 145, 0.5);
+  --glow-success: 0 0 20px rgba(74, 222, 128, 0.5);
+  --glow-error: 0 0 20px rgba(239, 68, 68, 0.5);
+  
+  /* ============================================
+     SPACING SCALE
+     ============================================ */
+  
+  --spacing-0: 0;
+  --spacing-1: 0.25rem;   /* 4px */
+  --spacing-2: 0.5rem;    /* 8px */
+  --spacing-3: 0.75rem;   /* 12px */
+  --spacing-4: 1rem;      /* 16px */
+  --spacing-5: 1.25rem;   /* 20px */
+  --spacing-6: 1.5rem;    /* 24px */
+  --spacing-8: 2rem;      /* 32px */
+  --spacing-10: 2.5rem;   /* 40px */
+  --spacing-12: 3rem;     /* 48px */
+  --spacing-16: 4rem;     /* 64px */
+  --spacing-20: 5rem;     /* 80px */
+  --spacing-24: 6rem;     /* 96px */
+  
+  /* ============================================
+     BORDER RADIUS SCALE
+     ============================================ */
+  
+  --radius-none: 0;
+  --radius-sm: 0.25rem;   /* 4px */
+  --radius-md: 0.5rem;    /* 8px */
+  --radius-lg: 0.75rem;   /* 12px */
+  --radius-xl: 1rem;      /* 16px */
+  --radius-2xl: 1.5rem;   /* 24px */
+  --radius-3xl: 2rem;     /* 32px */
+  --radius-full: 9999px;
+  
+  /* ============================================
+     TRANSITION SYSTEM
+     ============================================ */
+  
+  --transition-fast: 150ms ease-in-out;
+  --transition-base: 250ms ease-in-out;
+  --transition-slow: 350ms ease-in-out;
+  --transition-slower: 500ms ease-in-out;
+  
+  /* Cubic Bezier Easing Functions */
+  --ease-in-out-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  
+  /* ============================================
+     Z-INDEX SCALE
+     ============================================ */
+  
+  --z-dropdown: 1000;
+  --z-sticky: 1020;
+  --z-fixed: 1030;
+  --z-modal-backdrop: 1040;
+  --z-modal: 1050;
+  --z-popover: 1060;
+  --z-tooltip: 1070;
+  --z-toast: 1080;
+}
+
+/* ============================================
+   DARK MODE SUPPORT (Optional)
+   ============================================ */
+
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="auto"],
+  :root[data-theme="dark"] {
+    /* Dark Mode Overrides */
+    --color-bg-primary: var(--color-charcoal-900);
+    --color-bg-secondary: var(--color-charcoal-800);
+    --color-bg-tertiary: var(--color-charcoal-700);
+    --color-bg-card: var(--color-charcoal-800);
+    --color-bg-card-hover: var(--color-charcoal-700);
+    
+    --color-text-primary: var(--color-cream-50);
+    --color-text-secondary: var(--color-cream-200);
+    --color-text-tertiary: var(--color-cream-300);
+    --color-text-muted: var(--color-cream-400);
+    
+    --color-border-light: var(--color-charcoal-700);
+    --color-border-medium: var(--color-charcoal-600);
+    --color-border-strong: var(--color-charcoal-500);
+    
+    --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+    --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.4), 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.3);
+    --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  }
+}
+
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
+
+/* Background Colors */
+.bg-primary { background-color: var(--color-primary); }
+.bg-secondary { background-color: var(--color-secondary); }
+.bg-card { background-color: var(--color-bg-card); }
+
+/* Text Colors */
+.text-primary { color: var(--color-text-primary); }
+.text-secondary { color: var(--color-text-secondary); }
+.text-muted { color: var(--color-text-muted); }
+.text-copper { color: var(--color-copper-500); }
+.text-sage { color: var(--color-sage-400); }
+
+/* Border Colors */
+.border-primary { border-color: var(--color-border-primary); }
+.border-light { border-color: var(--color-border-light); }
+
+/* Gradients */
+.gradient-primary { background: var(--gradient-primary); }
+.gradient-brand { background: var(--gradient-brand); }
+.gradient-text-primary {
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.gradient-text-brand {
+  background: var(--gradient-brand);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Shadows */
+.shadow-sm { box-shadow: var(--shadow-sm); }
+.shadow-md { box-shadow: var(--shadow-md); }
+.shadow-lg { box-shadow: var(--shadow-lg); }
+.shadow-xl { box-shadow: var(--shadow-xl); }
+.shadow-primary { box-shadow: var(--shadow-primary); }
+.shadow-secondary { box-shadow: var(--shadow-secondary); }
+
+/* ============================================
+   END OF COLOR SYSTEM
+   ============================================ */

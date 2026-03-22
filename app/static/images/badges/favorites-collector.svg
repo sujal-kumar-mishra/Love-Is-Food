@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <defs>
+    <linearGradient id="pinkGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FCA5A5;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#EF4444;stop-opacity:1" />
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Badge Background -->
+  <circle cx="100" cy="100" r="80" fill="url(#pinkGradient)" filter="url(#glow)"/>
+  <circle cx="100" cy="100" r="70" fill="#FFFFFF" opacity="0.9"/>
+  <circle cx="100" cy="100" r="65" fill="none" stroke="url(#pinkGradient)" stroke-width="3"/>
+  
+  <!-- Heart Icon -->
+  <g transform="translate(100, 100)">
+    <path d="M0 5 C0 5, -4 -2, -12 -2 C-18 -2, -22 2, -22 8 C-22 18, -10 25, 0 32 C10 25, 22 18, 22 8 C22 2, 18 -2, 12 -2 C4 -2, 0 5, 0 5 Z" 
+          fill="url(#pinkGradient)" stroke="none"/>
+  </g>
+  
+  <!-- Badge Ribbon -->
+  <path d="M70 160 L70 190 L100 175 L130 190 L130 160" fill="url(#pinkGradient)" opacity="0.8"/>
+  
+  <!-- Title Text -->
+  <text x="100" y="55" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#EF4444">FAVORITES</text>
+  <text x="100" y="145" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#EF4444">COLLECTOR</text>
+</svg>

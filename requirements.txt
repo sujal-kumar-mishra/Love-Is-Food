@@ -1,12 +1,17 @@
 # Core Web Framework
 Flask==2.3.3
 Flask-SocketIO==5.3.6
+Flask-Login==0.6.3
+Flask-Bcrypt==1.0.1
 python-dotenv==1.0.1
+
+# Database
+pymongo==4.6.0
+dnspython==2.4.2
 
 # HTTP and API Libraries
 requests==2.31.0
 groq==0.4.2
-a4f-local
 httpx==0.24.1
 
 # WebSocket and Event Libraries

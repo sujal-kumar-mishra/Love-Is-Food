@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="400" viewBox="0 0 1600 400">
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#000814" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#001724" stop-opacity="0.55"/>
+    </linearGradient>
+    <filter id="glow" x="-10%" y="-30%" width="120%" height="160%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="14" result="blur"/>
+      <feColorMatrix in="blur" type="matrix" values="
+        0 0 0 0 0.22
+        0 0 0 0 0.70
+        0 0 0 0 0.67
+        0 0 0 0.55 0" result="turq"/>
+      <feBlend in="SourceGraphic" in2="turq" mode="screen"/>
+    </filter>
+  </defs>
+
+  <rect width="1600" height="400" fill="url(#bgGrad)"/>
+
+  <g transform="translate(0,0)" fill="none" stroke-linecap="round">
+    <!-- Base subtle wave fill -->
+    <path d="
+      M0 200
+      C150 120 300 120 450 200
+      C600 280 750 280 900 200
+      C1050 120 1200 120 1350 200
+      C1450 250 1525 240 1600 200
+      L1600 400 L0 400 Z"
+      fill="#38B2AC" fill-opacity="0.05"/>
+
+    <!-- Rear soft wave -->
+    <path d="
+      M0 200
+      C120 90 300 90 480 200
+      C660 310 840 310 1020 200
+      C1200 90 1380 90 1600 200"
+      stroke="#38B2AC" stroke-opacity="0.35" stroke-width="9" filter="url(#glow)"/>
+
+    <!-- Mid wave -->
+    <path d="
+      M0 200
+      C160 140 320 140 480 200
+      C640 260 800 260 960 200
+      C1120 140 1280 140 1440 200
+      C1520 230 1560 230 1600 200"
+      stroke="#38B2AC" stroke-opacity="0.65" stroke-width="7" filter="url(#glow)"/>
+
+    <!-- Front crisp wave -->
+    <path d="
+      M0 200
+      C180 170 360 170 540 200
+      C720 230 900 230 1080 200
+      C1260 170 1440 170 1600 200"
+      stroke="#38B2AC" stroke-width="3" stroke-opacity="0.95" filter="url(#glow)"/>
+
+    <!-- Spark accents -->
+    <g stroke="#38B2AC" stroke-width="4" stroke-linecap="round" filter="url(#glow)">
+      <line x1="310" y1="200" x2="320" y2="200" opacity="0.9"/>
+      <line x1="930" y1="200" x2="940" y2="200" opacity="0.9"/>
+      <line x1="1250" y1="200" x2="1262" y2="200" opacity="0.9"/>
+    </g>
+  </g>
+</svg>

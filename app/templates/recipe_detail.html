@@ -1,0 +1,2176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ recipe.title if recipe else 'Recipe Details' }} - Kitchen Assistant</title>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- ECharts for Nutrition Chart -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
+    
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'charcoal': '#2D3748',
+                        'cream': '#F7FAFC',
+                        'sage': '#68D391',
+                        'copper': '#ED8936',
+                        'soft-gray': '#E2E8F0',
+                        'forest': '#22543D'
+                    },
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                        'playfair': ['Playfair Display', 'serif'],
+                        'mono': ['JetBrains Mono', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        .recipe-hero {
+            background: linear-gradient(135deg, rgba(45, 55, 72, 0.7), rgba(34, 84, 61, 0.5)), 
+                        url('{{ url_for("static", filename="images/" + (recipe.image if recipe and recipe.image else "butter-chicken.jpg")) }}');
+            background-size: cover;
+            background-position: center;
+            min-height: 60vh;
+        }
+        
+        .ingredient-item {
+            transition: all 0.3s ease;
+        }
+        
+        .ingredient-item.checked {
+            opacity: 0.6;
+            text-decoration: line-through;
+        }
+        
+        .ingredient-item.checked label {
+            color: #68D391;
+        }
+        
+        .step-item {
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+        }
+        
+        .step-item.active {
+            border-left-color: #68D391;
+            background-color: rgba(104, 211, 145, 0.1);
+        }
+        
+        .step-item.completed {
+            border-left-color: #22543D;
+            background-color: rgba(34, 84, 61, 0.1);
+            opacity: 0.7;
+        }
+        
+        .timer-display {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 3rem;
+            font-weight: bold;
+            color: #ED8936;
+            text-shadow: 0 2px 10px rgba(237, 137, 54, 0.3);
+        }
+        
+        .timer-display.running {
+            animation: pulse-orange 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse-orange {
+            0%, 100% { 
+                transform: scale(1);
+                color: #ED8936;
+            }
+            50% { 
+                transform: scale(1.05);
+                color: #DD6B20;
+            }
+        }
+        
+        .conversion-panel {
+            background: linear-gradient(135deg, rgba(247, 250, 252, 0.95), rgba(226, 232, 240, 0.95));
+            backdrop-filter: blur(10px);
+        }
+        
+        .substitution-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .substitution-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(104, 211, 145, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .substitution-card:hover::before {
+            left: 100%;
+        }
+        
+        .substitution-card:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 10px 30px rgba(104, 211, 145, 0.25);
+            border-color: #68D391;
+        }
+        
+        .substitution-card:active {
+            transform: translateY(-1px) scale(1.01);
+        }
+        
+        .nutrition-chart {
+            height: 250px;
+        }
+        
+        .voice-indicator {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        /* Scale button animations */
+        .scale-btn {
+            transition: all 0.2s ease;
+        }
+        
+        .scale-btn:hover {
+            transform: scale(1.1);
+        }
+        
+        .scale-btn:active {
+            transform: scale(0.95);
+        }
+        
+        /* Timer items styling */
+        .timer-item {
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .timer-item:hover {
+            border-color: #ED8936;
+            box-shadow: 0 4px 12px rgba(237, 137, 54, 0.15);
+            transform: translateY(-2px);
+        }
+        
+        .timer-name {
+            font-family: 'Inter', sans-serif;
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #2D3748;
+            margin-bottom: 8px;
+        }
+        
+        .timer-countdown {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 2rem;
+            font-weight: bold;
+            color: #ED8936;
+            text-align: center;
+            margin: 12px 0;
+        }
+        
+        .timer-duration {
+            font-size: 0.875rem;
+            color: #718096;
+            text-align: center;
+            margin-bottom: 12px;
+        }
+        
+        .timer-delete-btn {
+            background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .timer-delete-btn:hover {
+            background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%);
+            transform: scale(1.02);
+            box-shadow: 0 4px 8px rgba(229, 62, 62, 0.3);
+        }
+        
+        .no-timers {
+            text-align: center;
+            color: #a0aec0;
+            padding: 24px;
+            font-size: 0.95rem;
+        }
+        
+        .no-timers i {
+            font-size: 2.5rem;
+            margin-bottom: 12px;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body class="font-inter bg-cream text-charcoal">
+    
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 bg-white bg-opacity-95 backdrop-blur-md border-b border-soft-gray shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-4">
+                    <a href="{{ url_for('main.index') }}" class="text-2xl font-playfair font-bold bg-gradient-to-r from-sage to-copper bg-clip-text text-transparent">
+                        Kitchen Assistant
+                    </a>
+                </div>
+                
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="{{ url_for('main.index') }}" class="text-charcoal hover:text-copper transition-colors font-medium">
+                        <i class="fas fa-home mr-1"></i> Home
+                    </a>
+                    <!-- <a href="{{ url_for('main.index') }}#recipes" class="text-charcoal hover:text-copper transition-colors font-medium">
+                        <i class="fas fa-search mr-1"></i> Recipes
+                    </a> -->
+                    <a href="#" class="text-copper font-medium">
+                        <i class="fas fa-utensils mr-1"></i> Cooking
+                    </a>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <a href="{{ url_for('main.index') }}" class="bg-copper text-white px-4 py-2 rounded-lg hover:bg-forest transition-colors">
+                        <i class="fas fa-arrow-left mr-2"></i>Back to App
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Recipe Hero Section -->
+    <section class="recipe-hero flex items-end relative mt-16">
+        <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full pb-8 relative z-10">
+            <div class="text-white">
+                <div class="flex items-start justify-between gap-4 mb-4">
+                    <h1 id="recipe-title" class="text-4xl md:text-6xl font-playfair font-bold flex-1">
+                        {{ recipe.title if recipe else 'Delicious Recipe' }}
+                    </h1>
+                    <button 
+                        id="favorite-btn" 
+                        onclick="toggleFavorite()"
+                        class="favorite-btn"
+                        title="Add to Favorites"
+                        style="background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(10px); border: 2px solid rgba(255, 255, 255, 0.3); color: white; padding: 12px 20px; border-radius: 50px; font-size: 18px; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; gap: 8px; white-space: nowrap;"
+                    >
+                        <i class="far fa-heart"></i>
+                        <span class="hidden sm:inline">Add to Favorites</span>
+                    </button>
+                </div>
+                <div class="flex flex-wrap items-center gap-6 text-lg">
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-clock"></i>
+                        <span id="cook-time">{{ recipe.readyInMinutes if recipe else '45' }} minutes</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-users"></i>
+                        <span id="servings-display">{{ recipe.servings if recipe else '4' }} servings</span>
+                    </div>
+                    {% if recipe and recipe.healthScore %}
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-heart"></i>
+                        <span>Health Score: {{ recipe.healthScore }}/100</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Recipe Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+            
+            <!-- Left Column - Ingredients & Tools -->
+            <div class="lg:col-span-1">
+                <!-- Recipe Scaling -->
+                <div class="bg-white rounded-2xl shadow-lg p-6 mb-8 border border-soft-gray">
+                    <h3 class="text-xl font-playfair font-semibold text-charcoal mb-4 flex items-center">
+                        <i class="fas fa-balance-scale text-copper mr-2"></i>
+                        Recipe Scaling
+                    </h3>
+                    <div class="flex items-center justify-center space-x-4">
+                        <label class="text-sm font-medium text-gray-600">Servings:</label>
+                        <div class="flex items-center space-x-3">
+                            <button id="scale-down" class="scale-btn bg-gradient-to-r from-gray-200 to-gray-300 text-charcoal w-10 h-10 rounded-full hover:from-copper hover:to-orange-600 hover:text-white transition-all shadow-md">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                            <span id="serving-count" class="text-2xl font-bold text-copper w-12 text-center">{{ recipe.servings if recipe else '4' }}</span>
+                            <button id="scale-up" class="scale-btn bg-gradient-to-r from-gray-200 to-gray-300 text-charcoal w-10 h-10 rounded-full hover:from-sage hover:to-green-600 hover:text-white transition-all shadow-md">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-500 text-center mt-3">
+                        <i class="fas fa-info-circle"></i> Ingredient quantities will adjust automatically
+                    </p>
+                </div>
+                
+                <!-- Ingredients List -->
+                <div class="bg-white rounded-2xl shadow-lg p-6 mb-8 border border-soft-gray">
+                    <h3 class="text-xl font-playfair font-semibold text-charcoal mb-6 flex items-center">
+                        <i class="fas fa-shopping-basket text-sage mr-2"></i>
+                        Ingredients
+                    </h3>
+                    <div id="ingredients-list" class="space-y-3">
+                        {% if recipe and recipe.ingredients %}
+                            {% for ingredient in recipe.ingredients %}
+                            <div class="ingredient-item flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors" data-ingredient="{{ ingredient.original }}" data-index="{{ loop.index0 }}">
+                                <input type="checkbox" id="ingredient-{{ loop.index0 }}" class="ingredient-checkbox mt-1 w-5 h-5 text-sage rounded focus:ring-sage cursor-pointer">
+                                <label for="ingredient-{{ loop.index0 }}" class="flex-1 cursor-pointer text-charcoal select-none ingredient-text">
+                                    <span class="font-medium">{{ ingredient.amount }} {{ ingredient.unit }}</span> {{ ingredient.name }}
+                                </label>
+                                <button class="show-substitution text-copper hover:text-forest transition-colors text-sm" data-ingredient="{{ ingredient.name }}" title="Show substitutions">
+                                    <i class="fas fa-exchange-alt"></i>
+                                </button>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <p class="text-gray-500">Loading ingredients...</p>
+                        {% endif %}
+                    </div>
+                    <div class="mt-4 pt-4 border-t border-gray-200">
+                        <button id="clear-checked" class="text-sm text-gray-600 hover:text-copper transition-colors">
+                            <i class="fas fa-undo mr-1"></i> Clear all checkmarks
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Unit Converter -->
+                <div class="conversion-panel rounded-2xl p-6 mb-8 border border-soft-gray shadow-lg">
+                    <h3 class="text-xl font-playfair font-semibold text-charcoal mb-4 flex items-center">
+                        <i class="fas fa-calculator text-copper mr-2"></i>
+                        Unit Converter
+                    </h3>
+                    <div class="space-y-4">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">Amount</label>
+                                <input type="number" id="convert-amount" placeholder="1" value="1" step="0.01" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-copper focus:border-copper focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">From</label>
+                                <select id="convert-from" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-copper focus:border-copper focus:outline-none">
+                                    <option value="cup">cups</option>
+                                    <option value="tablespoon">tbsp</option>
+                                    <option value="teaspoon">tsp</option>
+                                    <option value="ml">ml</option>
+                                    <option value="liter">liters</option>
+                                    <option value="gram">grams</option>
+                                    <option value="kg">kg</option>
+                                    <option value="oz">oz</option>
+                                    <option value="pound">lb</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="text-center text-gray-400">
+                            <i class="fas fa-arrow-down"></i>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">To</label>
+                            <select id="convert-to" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-copper focus:border-copper focus:outline-none">
+                                <option value="ml">ml</option>
+                                <option value="cup">cups</option>
+                                <option value="tablespoon">tbsp</option>
+                                <option value="teaspoon">tsp</option>
+                                <option value="liter">liters</option>
+                                <option value="gram">grams</option>
+                                <option value="kg">kg</option>
+                                <option value="oz">oz</option>
+                                <option value="pound">lb</option>
+                            </select>
+                        </div>
+                        <div class="text-center">
+                            <button id="convert-btn" class="bg-gradient-to-r from-copper to-orange-600 text-white px-6 py-2 rounded-lg hover:from-orange-600 hover:to-copper transition-all shadow-md transform hover:scale-105">
+                                <i class="fas fa-sync-alt mr-2"></i>Convert
+                            </button>
+                        </div>
+                        <div id="conversion-result" class="text-center font-mono text-xl text-forest font-bold bg-white p-3 rounded-lg border border-gray-200 min-h-[50px] flex items-center justify-center"></div>
+                    </div>
+                </div>
+                
+                <!-- Substitution Suggestions -->
+                <div class="bg-white rounded-2xl shadow-lg p-6 border border-soft-gray">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xl font-playfair font-semibold text-charcoal flex items-center">
+                            <i class="fas fa-exchange-alt text-sage mr-2"></i>
+                            Ingredient Substitutions
+                        </h3>
+                        <button id="clear-substitutions" class="text-xs text-gray-500 hover:text-copper transition-colors hidden" onclick="document.getElementById('substitutions-panel').innerHTML = '<div class=\'bg-gradient-to-r from-blue-50 to-green-50 rounded-lg p-4 border-l-4 border-sage\'><p class=\'text-sm text-gray-700 flex items-start\'><i class=\'fas fa-info-circle text-sage mr-2 mt-0.5\'></i><span><strong>How to use:</strong> Click on any ingredient\'s <i class=\'fas fa-exchange-alt text-copper mx-1\'></i> icon to see smart substitution suggestions with proper ratios.</span></p></div>'; this.classList.add('hidden');">
+                            <i class="fas fa-times-circle mr-1"></i>Clear
+                        </button>
+                    </div>
+                    <div id="substitutions-panel" class="min-h-[100px]">
+                        <div class="bg-gradient-to-r from-blue-50 to-green-50 rounded-lg p-4 border-l-4 border-sage">
+                            <p class="text-sm text-gray-700 flex items-start">
+                                <i class="fas fa-info-circle text-sage mr-2 mt-0.5"></i>
+                                <span><strong>How to use:</strong> Click on any ingredient's <i class="fas fa-exchange-alt text-copper mx-1"></i> icon to see smart substitution suggestions with proper ratios.</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Personal Notes -->
+                <div class="bg-white rounded-2xl shadow-lg p-6 mt-8 border border-soft-gray">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-yellow-500 to-orange-600 flex items-center justify-center">
+                            <i class="fas fa-sticky-note text-white"></i>
+                        </div>
+                        <h3 class="text-xl font-playfair font-semibold text-charcoal">My Notes</h3>
+                    </div>
+                    
+                    <textarea id="personalNotes" 
+                              class="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-copper focus:outline-none transition-colors resize-none"
+                              rows="6"
+                              placeholder="Add your personal notes, modifications, or tips..."></textarea>
+                    
+                    <button onclick="saveNotes()" class="w-full mt-3 bg-gradient-to-r from-copper to-orange-600 text-white px-4 py-3 rounded-xl font-semibold flex items-center justify-center gap-2 hover:from-orange-600 hover:to-copper transition-all shadow-md transform hover:scale-105">
+                        <i class="fas fa-save"></i>
+                        Save Notes
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Center Column - Instructions -->
+            <div class="lg:col-span-2">
+                <!-- Cooking Timer -->
+                <div class="bg-white rounded-2xl shadow-lg p-6 mb-8 border border-soft-gray">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-xl font-playfair font-semibold text-charcoal flex items-center">
+                            <i class="fas fa-stopwatch text-copper mr-2"></i>
+                            Cooking Timer
+                        </h3>
+                        <div class="flex items-center space-x-2">
+                            <button class="timer-preset bg-gray-200 text-charcoal px-4 py-1 rounded-lg text-sm hover:bg-copper hover:text-white transition-all shadow-sm" data-minutes="5">
+                                5min
+                            </button>
+                            <button class="timer-preset bg-gray-200 text-charcoal px-4 py-1 rounded-lg text-sm hover:bg-copper hover:text-white transition-all shadow-sm" data-minutes="10">
+                                10min
+                            </button>
+                            <button class="timer-preset bg-gray-200 text-charcoal px-4 py-1 rounded-lg text-sm hover:bg-copper hover:text-white transition-all shadow-sm" data-minutes="15">
+                                15min
+                            </button>
+                            <button class="timer-preset bg-gray-200 text-charcoal px-4 py-1 rounded-lg text-sm hover:bg-copper hover:text-white transition-all shadow-sm" data-minutes="30">
+                                30min
+                            </button>
+                        </div>
+                    </div>
+                    <div class="text-center bg-gradient-to-br from-gray-50 to-white p-8 rounded-xl border border-gray-200">
+                        <div id="timer-display" class="timer-display mb-6">00:00</div>
+                        <div class="flex items-center justify-center space-x-4 flex-wrap gap-3">
+                            <button id="timer-start" class="bg-gradient-to-r from-sage to-green-600 text-white px-8 py-3 rounded-lg hover:from-green-600 hover:to-sage transition-all shadow-md transform hover:scale-105">
+                                <i class="fas fa-play mr-2"></i>Start
+                            </button>
+                            <button id="timer-pause" class="bg-gradient-to-r from-gray-500 to-gray-600 text-white px-8 py-3 rounded-lg hover:from-gray-600 hover:to-gray-500 transition-all shadow-md transform hover:scale-105">
+                                <i class="fas fa-pause mr-2"></i>Pause
+                            </button>
+                            <button id="timer-reset" class="bg-gradient-to-r from-red-500 to-red-600 text-white px-8 py-3 rounded-lg hover:from-red-600 hover:to-red-500 transition-all shadow-md transform hover:scale-105">
+                                <i class="fas fa-redo mr-2"></i>Reset
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Active Timers List (from backend) -->
+                    <div id="timers-container" class="mt-6"></div>
+                </div>
+                
+                <!-- Cooking Instructions -->
+                <div class="bg-white rounded-2xl shadow-lg p-6 mb-8 border border-soft-gray">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-xl font-playfair font-semibold text-charcoal flex items-center">
+                            <i class="fas fa-list-ol text-sage mr-2"></i>
+                            Cooking Instructions
+                        </h3>
+                        <button id="voice-nav" class="bg-gradient-to-r from-sage to-green-600 text-white px-4 py-2 rounded-lg hover:from-green-600 hover:to-sage transition-all shadow-md flex items-center space-x-2 transform hover:scale-105">
+                            <i class="fas fa-microphone"></i>
+                            <span>Voice Guide</span>
+                        </button>
+                    </div>
+                    <div id="instructions-list" class="space-y-4">
+                        {% if recipe and recipe.instructions %}
+                            {% for step in recipe.instructions %}
+                            <div class="step-item p-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition-all" data-step="{{ loop.index0 }}">
+                                <div class="flex items-start space-x-4">
+                                    <div class="flex-shrink-0 w-8 h-8 bg-copper text-white rounded-full flex items-center justify-center font-bold">
+                                        {{ step.number }}
+                                    </div>
+                                    <div class="flex-1">
+                                        <p class="text-charcoal leading-relaxed">{{ step.step }}</p>
+                                        {% if step.time %}
+                                        <p class="text-sm text-gray-500 mt-2">
+                                            <i class="fas fa-clock text-copper"></i> Estimated time: {{ step.time }} minutes
+                                        </p>
+                                        {% endif %}
+                                    </div>
+                                    <div class="flex-shrink-0 flex flex-col space-y-2">
+                                        <button class="complete-step text-sage hover:text-forest transition-colors text-xl" data-step="{{ loop.index0 }}" title="Mark as complete">
+                                            <i class="far fa-check-circle"></i>
+                                        </button>
+                                        <button class="set-step-timer text-copper hover:text-forest transition-colors" data-step="{{ loop.index0 }}" title="Set timer for this step">
+                                            <i class="fas fa-stopwatch"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <p class="text-gray-500">No instructions available for this recipe.</p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Nutritional Information -->
+                <div class="bg-white rounded-2xl shadow-lg p-6 border border-soft-gray">
+                    <h3 class="text-xl font-playfair font-semibold text-charcoal mb-6 flex items-center">
+                        <i class="fas fa-heartbeat text-copper mr-2"></i>
+                        Nutritional Information
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="nutrition-chart" id="nutrition-chart"></div>
+                        <div class="space-y-3">
+                            {% if recipe and recipe.nutrition %}
+                            <div class="flex justify-between items-center p-4 bg-gradient-to-r from-orange-50 to-white rounded-lg border border-orange-200">
+                                <span class="font-medium flex items-center">
+                                    <i class="fas fa-fire text-orange-500 mr-2"></i> Calories
+                                </span>
+                                <span id="calories-value" class="font-mono text-xl font-bold text-copper" data-original="{{ recipe.nutrition.calories.amount if recipe.nutrition.calories else 350 }}">
+                                    {{ recipe.nutrition.calories.amount if recipe.nutrition.calories else 350 }}
+                                </span>
+                            </div>
+                            <div class="flex justify-between items-center p-4 bg-gradient-to-r from-blue-50 to-white rounded-lg border border-blue-200">
+                                <span class="font-medium flex items-center">
+                                    <i class="fas fa-drumstick-bite text-blue-500 mr-2"></i> Protein
+                                </span>
+                                <span id="protein-value" class="font-mono text-xl font-bold text-sage" data-original="{{ recipe.nutrition.protein.amount if recipe.nutrition.protein else 25 }}">
+                                    {{ recipe.nutrition.protein.amount if recipe.nutrition.protein else 25 }}g
+                                </span>
+                            </div>
+                            <div class="flex justify-between items-center p-4 bg-gradient-to-r from-green-50 to-white rounded-lg border border-green-200">
+                                <span class="font-medium flex items-center">
+                                    <i class="fas fa-bread-slice text-green-600 mr-2"></i> Carbs
+                                </span>
+                                <span id="carbs-value" class="font-mono text-xl font-bold text-forest" data-original="{{ recipe.nutrition.carbs.amount if recipe.nutrition.carbs else 30 }}">
+                                    {{ recipe.nutrition.carbs.amount if recipe.nutrition.carbs else 30 }}g
+                                </span>
+                            </div>
+                            <div class="flex justify-between items-center p-4 bg-gradient-to-r from-yellow-50 to-white rounded-lg border border-yellow-200">
+                                <span class="font-medium flex items-center">
+                                    <i class="fas fa-cheese text-yellow-600 mr-2"></i> Fat
+                                </span>
+                                <span id="fat-value" class="font-mono text-xl font-bold text-gray-600" data-original="{{ recipe.nutrition.fat.amount if recipe.nutrition.fat else 15 }}">
+                                    {{ recipe.nutrition.fat.amount if recipe.nutrition.fat else 15 }}g
+                                </span>
+                            </div>
+                            {% if recipe.nutrition.fiber %}
+                            <div class="flex justify-between items-center p-4 bg-gradient-to-r from-purple-50 to-white rounded-lg border border-purple-200">
+                                <span class="font-medium flex items-center">
+                                    <i class="fas fa-seedling text-purple-500 mr-2"></i> Fiber
+                                </span>
+                                <span id="fiber-value" class="font-mono text-xl font-bold text-purple-600" data-original="{{ recipe.nutrition.fiber.amount }}">
+                                    {{ recipe.nutrition.fiber.amount }}g
+                                </span>
+                            </div>
+                            {% endif %}
+                            {% if recipe.nutrition.sodium %}
+                            <div class="flex justify-between items-center p-4 bg-gradient-to-r from-red-50 to-white rounded-lg border border-red-200">
+                                <span class="font-medium flex items-center">
+                                    <i class="fas fa-salt-shaker text-red-500 mr-2"></i> Sodium
+                                </span>
+                                <span id="sodium-value" class="font-mono text-xl font-bold text-red-600" data-original="{{ recipe.nutrition.sodium.amount }}">
+                                    {{ recipe.nutrition.sodium.amount }}mg
+                                </span>
+                            </div>
+                            {% endif %}
+                            {% else %}
+                            <p class="text-gray-500">Nutritional information not available.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recipe Detail JavaScript -->
+    <script>
+        console.log('🎬 Recipe Detail Script Loading...');
+        
+        // Recipe data from Flask
+        const recipeData = {{ recipe | tojson | safe if recipe else '{}' }};
+        console.log('📊 Recipe data loaded:', recipeData ? 'YES' : 'NO');
+        
+        class RecipeDetailManager {
+            constructor() {
+                console.log('🏗️ RecipeDetailManager constructor called');
+                this.recipe = recipeData;
+                this.servings = parseInt(this.recipe.servings) || 4;
+                this.originalServings = this.servings;
+                this.checkedIngredients = new Set();
+                
+                // Timer state
+                this.timerSeconds = 0;
+                this.timerInterval = null;
+                this.isTimerRunning = false;
+                
+                // Current step tracking
+                this.currentStep = 0;
+                
+                // Voice navigation state
+                this.voiceNavActive = false;
+                
+                console.log('🚀 Calling init()...');
+                this.init();
+            }
+            
+            init() {
+                console.log('⚙️ RecipeDetailManager init() started');
+                this.setupEventListeners();
+                this.loadCheckedIngredients();
+                this.initializeNutritionChart();
+                this.setupTimerSocket();
+                console.log('✅ RecipeDetailManager init() completed');
+                
+                // Mark first step as active
+                const firstStep = document.querySelector('[data-step="0"]');
+                if (firstStep) {
+                    firstStep.classList.add('active');
+                }
+            }
+            
+            setupEventListeners() {
+                // Recipe scaling
+                document.getElementById('scale-up')?.addEventListener('click', () => this.adjustServings(1));
+                document.getElementById('scale-down')?.addEventListener('click', () => this.adjustServings(-1));
+                
+                // Ingredient checkboxes
+                document.querySelectorAll('.ingredient-checkbox').forEach(checkbox => {
+                    checkbox.addEventListener('change', (e) => {
+                        const index = parseInt(e.target.id.split('-')[1]);
+                        this.toggleIngredient(index, e.target.checked);
+                    });
+                });
+                
+                // Clear checked button
+                document.getElementById('clear-checked')?.addEventListener('click', () => this.clearAllChecked());
+                
+                // Substitution buttons
+                document.querySelectorAll('.show-substitution').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const ingredient = e.currentTarget.dataset.ingredient;
+                        this.showSubstitutions(ingredient);
+                    });
+                });
+                
+                // Unit converter
+                document.getElementById('convert-btn')?.addEventListener('click', () => this.convertUnits());
+                
+                // Timer controls
+                document.querySelectorAll('.timer-preset').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const minutes = parseInt(e.currentTarget.dataset.minutes);
+                        this.setTimer(minutes);
+                    });
+                });
+                
+                document.getElementById('timer-start')?.addEventListener('click', () => this.startTimer());
+                document.getElementById('timer-pause')?.addEventListener('click', () => this.pauseTimer());
+                document.getElementById('timer-reset')?.addEventListener('click', () => this.resetTimer());
+                
+                // Step completion
+                document.querySelectorAll('.complete-step').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const stepIndex = parseInt(e.currentTarget.dataset.step);
+                        this.completeStep(stepIndex);
+                    });
+                });
+                
+                // Step timers
+                document.querySelectorAll('.set-step-timer').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const stepIndex = parseInt(e.currentTarget.dataset.step);
+                        this.setStepTimer(stepIndex);
+                    });
+                });
+                
+                // Voice navigation
+                document.getElementById('voice-nav')?.addEventListener('click', () => this.toggleVoiceNavigation());
+            }
+            
+            adjustServings(change) {
+                const newServings = Math.max(1, this.servings + change);
+                if (newServings === this.servings) return;
+                
+                this.servings = newServings;
+                document.getElementById('serving-count').textContent = this.servings;
+                document.getElementById('servings-display').textContent = `${this.servings} servings`;
+                
+                // Scale ingredients
+                this.scaleIngredients();
+                
+                // Scale nutrition values
+                this.scaleNutrition();
+            }
+            
+            scaleIngredients() {
+                const scaleFactor = this.servings / this.originalServings;
+                
+                document.querySelectorAll('.ingredient-item').forEach((item, index) => {
+                    const label = item.querySelector('.ingredient-text');
+                    const originalText = item.dataset.ingredient;
+                    
+                    // Replace numbers in the ingredient text with scaled values
+                    const scaledText = originalText.replace(/(\d+(?:\.\d+)?)/g, (match) => {
+                        const originalNumber = parseFloat(match);
+                        const scaledNumber = originalNumber * scaleFactor;
+                        
+                        // Round to 2 decimal places, but remove trailing zeros
+                        return parseFloat(scaledNumber.toFixed(2)).toString();
+                    });
+                    
+                    label.innerHTML = scaledText;
+                });
+            }
+            
+            scaleNutrition() {
+                const scaleFactor = this.servings / this.originalServings;
+                
+                // Scale calories
+                const caloriesEl = document.getElementById('calories-value');
+                if (caloriesEl) {
+                    const originalCalories = parseFloat(caloriesEl.dataset.original) || 0;
+                    const scaledCalories = Math.round(originalCalories * scaleFactor);
+                    caloriesEl.textContent = scaledCalories;
+                }
+                
+                // Scale protein
+                const proteinEl = document.getElementById('protein-value');
+                if (proteinEl) {
+                    const originalProtein = parseFloat(proteinEl.dataset.original) || 0;
+                    const scaledProtein = Math.round(originalProtein * scaleFactor);
+                    proteinEl.textContent = scaledProtein + 'g';
+                }
+                
+                // Scale carbs
+                const carbsEl = document.getElementById('carbs-value');
+                if (carbsEl) {
+                    const originalCarbs = parseFloat(carbsEl.dataset.original) || 0;
+                    const scaledCarbs = Math.round(originalCarbs * scaleFactor);
+                    carbsEl.textContent = scaledCarbs + 'g';
+                }
+                
+                // Scale fat
+                const fatEl = document.getElementById('fat-value');
+                if (fatEl) {
+                    const originalFat = parseFloat(fatEl.dataset.original) || 0;
+                    const scaledFat = Math.round(originalFat * scaleFactor);
+                    fatEl.textContent = scaledFat + 'g';
+                }
+                
+                // Scale fiber (if exists)
+                const fiberEl = document.getElementById('fiber-value');
+                if (fiberEl) {
+                    const originalFiber = parseFloat(fiberEl.dataset.original) || 0;
+                    const scaledFiber = Math.round(originalFiber * scaleFactor);
+                    fiberEl.textContent = scaledFiber + 'g';
+                }
+                
+                // Scale sodium (if exists)
+                const sodiumEl = document.getElementById('sodium-value');
+                if (sodiumEl) {
+                    const originalSodium = parseFloat(sodiumEl.dataset.original) || 0;
+                    const scaledSodium = Math.round(originalSodium * scaleFactor);
+                    sodiumEl.textContent = scaledSodium + 'mg';
+                }
+                
+                // Update nutrition chart
+                this.updateNutritionChart(scaleFactor);
+            }
+            
+            updateNutritionChart(scaleFactor) {
+                const chartContainer = document.getElementById('nutrition-chart');
+                if (!chartContainer || !window.echarts) return;
+                
+                const chart = echarts.getInstanceByDom(chartContainer);
+                if (!chart) return;
+                
+                // Get scaled values
+                const proteinEl = document.getElementById('protein-value');
+                const carbsEl = document.getElementById('carbs-value');
+                const fatEl = document.getElementById('fat-value');
+                
+                const protein = proteinEl ? parseFloat(proteinEl.dataset.original) * scaleFactor : 25;
+                const carbs = carbsEl ? parseFloat(carbsEl.dataset.original) * scaleFactor : 30;
+                const fat = fatEl ? parseFloat(fatEl.dataset.original) * scaleFactor : 15;
+                
+                const option = {
+                    series: [{
+                        data: [
+                            { value: Math.round(protein), name: 'Protein', itemStyle: { color: '#68D391' } },
+                            { value: Math.round(carbs), name: 'Carbs', itemStyle: { color: '#22543D' } },
+                            { value: Math.round(fat), name: 'Fat', itemStyle: { color: '#ED8936' } }
+                        ]
+                    }]
+                };
+                
+                chart.setOption(option);
+            }
+            
+            toggleIngredient(index, checked) {
+                const item = document.querySelector(`[data-index="${index}"]`);
+                
+                if (checked) {
+                    this.checkedIngredients.add(index);
+                    item.classList.add('checked');
+                } else {
+                    this.checkedIngredients.delete(index);
+                    item.classList.remove('checked');
+                }
+                
+                // Save to localStorage
+                this.saveCheckedIngredients();
+            }
+            
+            saveCheckedIngredients() {
+                localStorage.setItem('checkedIngredients', JSON.stringify([...this.checkedIngredients]));
+            }
+            
+            loadCheckedIngredients() {
+                const saved = localStorage.getItem('checkedIngredients');
+                if (saved) {
+                    this.checkedIngredients = new Set(JSON.parse(saved));
+                    this.checkedIngredients.forEach(index => {
+                        const checkbox = document.getElementById(`ingredient-${index}`);
+                        const item = document.querySelector(`[data-index="${index}"]`);
+                        if (checkbox && item) {
+                            checkbox.checked = true;
+                            item.classList.add('checked');
+                        }
+                    });
+                }
+            }
+            
+            clearAllChecked() {
+                this.checkedIngredients.clear();
+                document.querySelectorAll('.ingredient-checkbox').forEach(checkbox => {
+                    checkbox.checked = false;
+                });
+                document.querySelectorAll('.ingredient-item').forEach(item => {
+                    item.classList.remove('checked');
+                });
+                this.saveCheckedIngredients();
+            }
+            
+            showSubstitutions(ingredient) {
+                const panel = document.getElementById('substitutions-panel');
+                const clearBtn = document.getElementById('clear-substitutions');
+                
+                // Common substitution database
+                const substitutions = this.getSubstitutions(ingredient.toLowerCase());
+                
+                if (substitutions.length === 0) {
+                    panel.innerHTML = `
+                        <div class="bg-yellow-50 rounded-lg p-4 border-l-4 border-yellow-400">
+                            <p class="text-sm text-gray-700 flex items-start">
+                                <i class="fas fa-exclamation-circle text-yellow-500 mr-2 mt-0.5"></i>
+                                <span>No common substitutions found for <strong class="text-copper">${ingredient}</strong>. Try asking the AI assistant for custom suggestions!</span>
+                            </p>
+                        </div>
+                    `;
+                    clearBtn.classList.remove('hidden');
+                    return;
+                }
+                
+                panel.innerHTML = `
+                    <div class="space-y-4">
+                        <!-- Header -->
+                        <div class="bg-gradient-to-r from-sage/10 to-green-100 rounded-lg p-3 border border-sage/30">
+                            <h4 class="font-semibold text-charcoal flex items-center">
+                                <i class="fas fa-lightbulb text-yellow-500 mr-2"></i>
+                                Substitution Options for 
+                                <span class="text-copper mx-1 font-bold">${ingredient}</span>
+                            </h4>
+                            <p class="text-xs text-gray-600 mt-1 ml-6">Click any option to use it in your recipe</p>
+                        </div>
+                        
+                        <!-- Substitution Cards Grid -->
+                        <div class="grid grid-cols-1 gap-3">
+                            ${substitutions.map((sub, index) => `
+                                <div class="substitution-card group relative p-4 bg-white rounded-lg border-2 border-gray-200 hover:border-sage hover:shadow-md transition-all cursor-pointer">
+                                    <div class="flex items-start justify-between">
+                                        <div class="flex-1">
+                                            <div class="flex items-center mb-2">
+                                                <span class="flex items-center justify-center w-6 h-6 rounded-full bg-sage text-white text-xs font-bold mr-2">
+                                                    ${index + 1}
+                                                </span>
+                                                <p class="font-semibold text-charcoal text-base">
+                                                    ${sub.substitute}
+                                                </p>
+                                            </div>
+                                            <div class="ml-8 space-y-1">
+                                                <div class="flex items-center text-sm">
+                                                    <i class="fas fa-balance-scale text-copper mr-2 w-4"></i>
+                                                    <span class="text-gray-700">
+                                                        <strong>Ratio:</strong> 
+                                                        <span class="text-sage font-semibold">${sub.ratio}:1</span>
+                                                        <span class="text-xs text-gray-500 ml-1">(${sub.ratio} cup ${sub.substitute} = 1 cup ${ingredient})</span>
+                                                    </span>
+                                                </div>
+                                                ${sub.notes ? `
+                                                    <div class="flex items-start text-xs text-gray-600 mt-1">
+                                                        <i class="fas fa-info-circle text-blue-500 mr-2 mt-0.5 w-4"></i>
+                                                        <span>${sub.notes}</span>
+                                                    </div>
+                                                ` : ''}
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center space-x-1 ml-2">
+                                            <span class="opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <i class="fas fa-arrow-right text-sage"></i>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                        
+                        <!-- Footer Tip -->
+                        <div class="bg-blue-50 rounded-lg p-3 border border-blue-200">
+                            <p class="text-xs text-gray-600 flex items-start">
+                                <i class="fas fa-magic text-blue-500 mr-2 mt-0.5"></i>
+                                <span><strong>Pro Tip:</strong> These substitutions work best when used in similar recipes. Adjust quantities based on taste and consistency.</span>
+                            </p>
+                        </div>
+                    </div>
+                `;
+                clearBtn.classList.remove('hidden');
+                
+                // Scroll to substitutions panel
+                panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+            
+            getSubstitutions(ingredient) {
+                const substitutionDatabase = {
+                    'butter': [
+                        { substitute: 'Margarine', ratio: 1, notes: 'Best for baking. Use unsalted for better control.' },
+                        { substitute: 'Coconut Oil', ratio: 1, notes: 'Works great in baking. Adds subtle coconut flavor.' },
+                        { substitute: 'Olive Oil', ratio: 0.75, notes: 'Better for savory dishes. Use 3/4 cup oil per 1 cup butter.' },
+                        { substitute: 'Greek Yogurt', ratio: 0.5, notes: 'For baking only. Reduces calories. Use half the amount.' }
+                    ],
+                    'milk': [
+                        { substitute: 'Almond Milk', ratio: 1, notes: 'Dairy-free. Works in all recipes. Slightly nutty taste.' },
+                        { substitute: 'Soy Milk', ratio: 1, notes: 'Highest protein content. Neutral flavor.' },
+                        { substitute: 'Coconut Milk', ratio: 1, notes: 'Rich and creamy. Best for curries and desserts.' },
+                        { substitute: 'Oat Milk', ratio: 1, notes: 'Creamy texture. Great for coffee and baking.' }
+                    ],
+                    'egg': [
+                        { substitute: 'Flax Egg', ratio: 1, notes: 'Mix 1 tbsp ground flaxseed + 3 tbsp water per egg. Let sit 5 min.' },
+                        { substitute: 'Applesauce', ratio: 0.25, notes: 'Use 1/4 cup per egg. Best for sweet baked goods.' },
+                        { substitute: 'Mashed Banana', ratio: 0.25, notes: 'Use 1/4 cup per egg. Adds banana flavor.' },
+                        { substitute: 'Chia Egg', ratio: 1, notes: 'Mix 1 tbsp chia seeds + 3 tbsp water per egg. Wait 10 min.' }
+                    ],
+                    'sugar': [
+                        { substitute: 'Honey', ratio: 0.75, notes: 'Use 3/4 cup honey per 1 cup sugar. Reduce liquid by 1/4 cup.' },
+                        { substitute: 'Maple Syrup', ratio: 0.75, notes: 'Use 3/4 cup per 1 cup sugar. Reduce liquid slightly.' },
+                        { substitute: 'Coconut Sugar', ratio: 1, notes: 'Direct 1:1 replacement. Lower glycemic index.' },
+                        { substitute: 'Stevia', ratio: 0.25, notes: 'Very sweet. Use 1/4 teaspoon per 1 cup sugar.' }
+                    ],
+                    'flour': [
+                        { substitute: 'Whole Wheat Flour', ratio: 1, notes: 'Direct replacement. Denser texture, nuttier flavor.' },
+                        { substitute: 'Almond Flour', ratio: 1, notes: 'Gluten-free. Works best in cookies and cakes.' },
+                        { substitute: 'Coconut Flour', ratio: 0.25, notes: 'Very absorbent. Use 1/4 cup per 1 cup flour + extra liquid.' },
+                        { substitute: 'Oat Flour', ratio: 1.3, notes: 'Gluten-free. Use 1 1/3 cup per 1 cup regular flour.' }
+                    ],
+                    'cream': [
+                        { substitute: 'Greek Yogurt', ratio: 1, notes: 'Lower fat. Great for sauces and dips.' },
+                        { substitute: 'Coconut Cream', ratio: 1, notes: 'Dairy-free. Perfect for curries and desserts.' },
+                        { substitute: 'Cashew Cream', ratio: 1, notes: 'Blend soaked cashews with water. Rich and creamy.' },
+                        { substitute: 'Evaporated Milk', ratio: 1, notes: 'Lower fat than heavy cream. Works in most recipes.' }
+                    ],
+                    'oil': [
+                        { substitute: 'Butter', ratio: 1, notes: 'Use melted butter. Adds rich flavor.' },
+                        { substitute: 'Applesauce', ratio: 1, notes: 'For baking. Reduces fat. Makes moist texture.' },
+                        { substitute: 'Greek Yogurt', ratio: 1, notes: 'For baking. Lower fat, higher protein.' },
+                        { substitute: 'Avocado', ratio: 1, notes: 'For baking. Healthy fats. Mashed ripe avocado.' }
+                    ],
+                    'sour cream': [
+                        { substitute: 'Greek Yogurt', ratio: 1, notes: 'Perfect replacement. Same tangy flavor.' },
+                        { substitute: 'Plain Yogurt', ratio: 1, notes: 'Direct substitute. Slightly thinner.' },
+                        { substitute: 'Cottage Cheese', ratio: 1, notes: 'Blend until smooth. High protein option.' },
+                        { substitute: 'Cream Cheese', ratio: 1, notes: 'Mix with a little milk. Richer flavor.' }
+                    ],
+                    'buttermilk': [
+                        { substitute: 'Milk + Vinegar', ratio: 1, notes: '1 cup milk + 1 tbsp vinegar. Let sit 5 minutes.' },
+                        { substitute: 'Milk + Lemon Juice', ratio: 1, notes: '1 cup milk + 1 tbsp lemon juice. Wait 5 minutes.' },
+                        { substitute: 'Plain Yogurt', ratio: 1, notes: 'Thin with milk to desired consistency.' },
+                        { substitute: 'Kefir', ratio: 1, notes: 'Direct replacement. Similar tang and texture.' }
+                    ],
+                    'breadcrumb': [
+                        { substitute: 'Crushed Crackers', ratio: 1, notes: 'Saltine or Ritz crackers work great.' },
+                        { substitute: 'Panko', ratio: 1, notes: 'Lighter and crispier texture.' },
+                        { substitute: 'Oats', ratio: 1, notes: 'Pulse in blender. Gluten-free option.' },
+                        { substitute: 'Crushed Cornflakes', ratio: 1, notes: 'Extra crispy coating.' }
+                    ]
+                };
+                
+                // Check if ingredient contains any key
+                for (const [key, subs] of Object.entries(substitutionDatabase)) {
+                    if (ingredient.includes(key)) {
+                        return subs;
+                    }
+                }
+                
+                return [];
+            }
+            
+            convertUnits() {
+                const amount = parseFloat(document.getElementById('convert-amount').value);
+                const fromUnit = document.getElementById('convert-from').value;
+                const toUnit = document.getElementById('convert-to').value;
+                const resultDiv = document.getElementById('conversion-result');
+                
+                if (isNaN(amount)) {
+                    resultDiv.innerHTML = '<span class="text-red-500"><i class="fas fa-exclamation-triangle mr-1"></i>Enter valid amount</span>';
+                    return;
+                }
+                
+                const result = this.performConversion(amount, fromUnit, toUnit);
+                
+                if (result !== null) {
+                    resultDiv.innerHTML = `
+                        <div class="text-center">
+                            <div class="text-3xl font-bold text-copper">${result.toFixed(2)}</div>
+                            <div class="text-sm text-gray-600 mt-1">${toUnit}</div>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = '<span class="text-red-500"><i class="fas fa-times-circle mr-1"></i>Cannot convert</span>';
+                }
+            }
+            
+            performConversion(amount, fromUnit, toUnit) {
+                // Conversion table (to ml for volume, to g for weight)
+                const volumeToMl = {
+                    'cup': 240,
+                    'tablespoon': 15,
+                    'teaspoon': 5,
+                    'ml': 1,
+                    'liter': 1000,
+                    'fl_oz': 30,
+                    'pint': 473,
+                    'quart': 946,
+                    'gallon': 3785
+                };
+                
+                const weightToG = {
+                    'gram': 1,
+                    'g': 1,
+                    'kg': 1000,
+                    'oz': 28.35,
+                    'pound': 453.592,
+                    'lb': 453.592
+                };
+                
+                // Volume conversions
+                if (volumeToMl[fromUnit] && volumeToMl[toUnit]) {
+                    const ml = amount * volumeToMl[fromUnit];
+                    return ml / volumeToMl[toUnit];
+                }
+                
+                // Weight conversions
+                if (weightToG[fromUnit] && weightToG[toUnit]) {
+                    const grams = amount * weightToG[fromUnit];
+                    return grams / weightToG[toUnit];
+                }
+                
+                // Cannot convert between volume and weight
+                return null;
+            }
+            
+            // Timer functions
+            setTimer(minutes) {
+                this.timerSeconds = minutes * 60;
+                this.updateTimerDisplay();
+                
+                // Visual feedback
+                const display = document.getElementById('timer-display');
+                display.classList.add('scale-110');
+                setTimeout(() => display.classList.remove('scale-110'), 200);
+            }
+            
+            startTimer() {
+                if (this.isTimerRunning || this.timerSeconds <= 0) return;
+                
+                this.isTimerRunning = true;
+                document.getElementById('timer-display').classList.add('running');
+                
+                this.timerInterval = setInterval(() => {
+                    this.timerSeconds--;
+                    this.updateTimerDisplay();
+                    
+                    if (this.timerSeconds <= 0) {
+                        this.timerComplete();
+                    }
+                }, 1000);
+            }
+            
+            pauseTimer() {
+                this.isTimerRunning = false;
+                document.getElementById('timer-display').classList.remove('running');
+                
+                if (this.timerInterval) {
+                    clearInterval(this.timerInterval);
+                    this.timerInterval = null;
+                }
+            }
+            
+            resetTimer() {
+                this.pauseTimer();
+                this.timerSeconds = 0;
+                this.updateTimerDisplay();
+            }
+            
+            updateTimerDisplay() {
+                const minutes = Math.floor(this.timerSeconds / 60);
+                const seconds = this.timerSeconds % 60;
+                const display = document.getElementById('timer-display');
+                
+                if (display) {
+                    display.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+                }
+            }
+            
+            timerComplete() {
+                this.pauseTimer();
+                
+                // Play alarm sound (using Web Audio API for better browser support)
+                this.playAlarmSound();
+                
+                // Show visual alert modal
+                this.showTimerAlert();
+                
+                // Browser notification if permitted
+                if ('Notification' in window && Notification.permission === 'granted') {
+                    new Notification('⏰ Timer Complete!', {
+                        body: 'Your cooking timer has finished. Check your recipe!',
+                        icon: '/static/images/timer-icon.png',
+                        badge: '/static/images/timer-icon.png'
+                    });
+                }
+            }
+            
+            playAlarmSound() {
+                try {
+                    // Create audio context
+                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    
+                    // Play beep sound 3 times
+                    for (let i = 0; i < 3; i++) {
+                        setTimeout(() => {
+                            const oscillator = audioContext.createOscillator();
+                            const gainNode = audioContext.createGain();
+                            
+                            oscillator.connect(gainNode);
+                            gainNode.connect(audioContext.destination);
+                            
+                            oscillator.frequency.value = 800; // Frequency in Hz
+                            oscillator.type = 'sine';
+                            
+                            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+                            
+                            oscillator.start(audioContext.currentTime);
+                            oscillator.stop(audioContext.currentTime + 0.5);
+                        }, i * 600);
+                    }
+                } catch (error) {
+                    console.log('Audio not supported, using fallback');
+                    // Fallback: try to play a simple beep
+                    const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBTGH0fPTgjMGHm7A7+OZURE=');
+                    audio.play().catch(() => {});
+                }
+            }
+            
+            showTimerAlert() {
+                // Create modal overlay
+                const overlay = document.createElement('div');
+                overlay.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0, 0, 0, 0.7);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 10000;
+                    backdrop-filter: blur(5px);
+                    animation: fadeIn 0.3s ease;
+                `;
+                
+                // Create alert box
+                const alertBox = document.createElement('div');
+                alertBox.style.cssText = `
+                    background: linear-gradient(135deg, #ED8936 0%, #68D391 100%);
+                    padding: 40px;
+                    border-radius: 20px;
+                    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+                    text-align: center;
+                    max-width: 400px;
+                    animation: scaleIn 0.3s ease;
+                `;
+                
+                alertBox.innerHTML = `
+                    <div style="font-size: 80px; margin-bottom: 20px; animation: bounce 1s infinite;">⏰</div>
+                    <h2 style="color: white; font-size: 32px; font-weight: bold; margin-bottom: 15px; font-family: 'Playfair Display', serif;">
+                        Timer Complete!
+                    </h2>
+                    <p style="color: white; font-size: 18px; margin-bottom: 30px; opacity: 0.95;">
+                        Time to check your cooking progress!
+                    </p>
+                    <button id="dismissTimerAlert" style="
+                        background: white;
+                        color: #ED8936;
+                        border: none;
+                        padding: 15px 40px;
+                        border-radius: 50px;
+                        font-size: 16px;
+                        font-weight: bold;
+                        cursor: pointer;
+                        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+                        transition: all 0.3s ease;
+                    " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                        Got It! ✓
+                    </button>
+                `;
+                
+                overlay.appendChild(alertBox);
+                document.body.appendChild(overlay);
+                
+                // Add animations
+                const style = document.createElement('style');
+                style.textContent = `
+                    @keyframes fadeIn {
+                        from { opacity: 0; }
+                        to { opacity: 1; }
+                    }
+                    @keyframes scaleIn {
+                        from { transform: scale(0.8); opacity: 0; }
+                        to { transform: scale(1); opacity: 1; }
+                    }
+                    @keyframes bounce {
+                        0%, 100% { transform: translateY(0); }
+                        50% { transform: translateY(-10px); }
+                    }
+                `;
+                document.head.appendChild(style);
+                
+                // Dismiss handler
+                document.getElementById('dismissTimerAlert').addEventListener('click', () => {
+                    overlay.style.animation = 'fadeIn 0.3s ease reverse';
+                    setTimeout(() => {
+                        overlay.remove();
+                        style.remove();
+                    }, 300);
+                });
+                
+                // Auto-dismiss after 10 seconds
+                setTimeout(() => {
+                    if (document.body.contains(overlay)) {
+                        overlay.style.animation = 'fadeIn 0.3s ease reverse';
+                        setTimeout(() => {
+                            overlay.remove();
+                            style.remove();
+                        }, 300);
+                    }
+                }, 10000);
+            }
+            
+            completeStep(stepIndex) {
+                const step = document.querySelector(`[data-step="${stepIndex}"]`);
+                const button = step.querySelector('.complete-step i');
+                
+                if (step.classList.contains('completed')) {
+                    // Uncomplete step
+                    step.classList.remove('completed');
+                    button.classList.remove('fas');
+                    button.classList.add('far');
+                } else {
+                    // Complete step
+                    step.classList.add('completed');
+                    step.classList.remove('active');
+                    button.classList.remove('far');
+                    button.classList.add('fas');
+                    
+                    // Move to next step
+                    if (stepIndex + 1 < document.querySelectorAll('.step-item').length) {
+                        this.currentStep = stepIndex + 1;
+                        const nextStep = document.querySelector(`[data-step="${this.currentStep}"]`);
+                        if (nextStep && !nextStep.classList.contains('completed')) {
+                            nextStep.classList.add('active');
+                        }
+                    }
+                }
+            }
+            
+            setStepTimer(stepIndex) {
+                // Default 10 minutes per step
+                this.setTimer(10);
+                
+                // Show notification
+                const step = document.querySelector(`[data-step="${stepIndex}"]`);
+                const stepNumber = stepIndex + 1;
+                
+                // Create toast notification
+                const toast = document.createElement('div');
+                toast.className = 'fixed top-24 right-4 bg-copper text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-bounce';
+                toast.innerHTML = `<i class="fas fa-stopwatch mr-2"></i>Timer set for Step ${stepNumber} (10 minutes)`;
+                document.body.appendChild(toast);
+                
+                setTimeout(() => toast.remove(), 3000);
+            }
+            
+            toggleVoiceNavigation() {
+                if (!this.voiceNavActive) {
+                    this.startVoiceNavigation();
+                } else {
+                    this.stopVoiceNavigation();
+                }
+            }
+            
+            startVoiceNavigation() {
+                // Check if speech synthesis is supported
+                if (!('speechSynthesis' in window)) {
+                    alert('Sorry, your browser does not support voice navigation. Please use Chrome, Edge, or Safari.');
+                    return;
+                }
+                
+                this.voiceNavActive = true;
+                this.currentStep = 0;
+                
+                // Update button appearance
+                const voiceBtn = document.getElementById('voice-nav');
+                if (voiceBtn) {
+                    voiceBtn.innerHTML = '<i class="fas fa-stop"></i><span>Stop Voice Guide</span>';
+                    voiceBtn.classList.add('bg-red-500', 'hover:bg-red-600');
+                    voiceBtn.classList.remove('from-sage', 'to-green-600');
+                }
+                
+                // Speak introduction
+                this.speak(`Starting voice guided cooking for ${this.recipe.title || 'this recipe'}. There are ${this.recipe.instructions?.length || 0} steps. Let's begin.`, () => {
+                    this.speakCurrentStep();
+                });
+            }
+            
+            stopVoiceNavigation() {
+                this.voiceNavActive = false;
+                
+                // Stop any ongoing speech
+                if (window.speechSynthesis) {
+                    window.speechSynthesis.cancel();
+                }
+                
+                // Update button appearance
+                const voiceBtn = document.getElementById('voice-nav');
+                if (voiceBtn) {
+                    voiceBtn.innerHTML = '<i class="fas fa-microphone"></i><span>Voice Guide</span>';
+                    voiceBtn.classList.remove('bg-red-500', 'hover:bg-red-600');
+                    voiceBtn.classList.add('bg-gradient-to-r', 'from-sage', 'to-green-600');
+                }
+                
+                console.log('Voice navigation stopped');
+            }
+            
+            speakCurrentStep() {
+                if (!this.voiceNavActive) return;
+                
+                const instructions = this.recipe.instructions || [];
+                if (this.currentStep >= instructions.length) {
+                    this.speak('Cooking complete! Enjoy your meal!', () => {
+                        this.stopVoiceNavigation();
+                    });
+                    return;
+                }
+                
+                const step = instructions[this.currentStep];
+                const stepText = `Step ${step.number}: ${step.step}`;
+                
+                // Highlight current step
+                document.querySelectorAll('.step-item').forEach((item, index) => {
+                    item.classList.remove('active', 'bg-green-100');
+                    if (index === this.currentStep) {
+                        item.classList.add('active', 'bg-green-100');
+                        item.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                });
+                
+                // Speak the step
+                this.speak(stepText, () => {
+                    // After speaking, wait for user confirmation or auto-advance
+                    setTimeout(() => {
+                        if (this.voiceNavActive) {
+                            this.speak('Say next when ready for the next step, or click the voice guide button to stop.', () => {
+                                this.listenForCommand();
+                            });
+                        }
+                    }, 1000);
+                });
+            }
+            
+            speak(text, callback) {
+                if (!window.speechSynthesis) return;
+                
+                // Cancel any ongoing speech
+                window.speechSynthesis.cancel();
+                
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.rate = 0.9; // Slightly slower for clarity
+                utterance.pitch = 1.0;
+                utterance.volume = 1.0;
+                
+                utterance.onend = () => {
+                    if (callback) callback();
+                };
+                
+                utterance.onerror = (event) => {
+                    console.error('Speech synthesis error:', event);
+                };
+                
+                window.speechSynthesis.speak(utterance);
+            }
+            
+            listenForCommand() {
+                if (!this.voiceNavActive) return;
+                
+                // Check if speech recognition is supported
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                
+                if (!SpeechRecognition) {
+                    // Fallback: auto-advance after 5 seconds
+                    console.log('Speech recognition not supported, auto-advancing in 5 seconds...');
+                    setTimeout(() => {
+                        if (this.voiceNavActive) {
+                            this.nextStep();
+                        }
+                    }, 5000);
+                    return;
+                }
+                
+                const recognition = new SpeechRecognition();
+                recognition.lang = 'en-US';
+                recognition.continuous = false;
+                recognition.interimResults = false;
+                
+                recognition.onresult = (event) => {
+                    const command = event.results[0][0].transcript.toLowerCase();
+                    console.log('Voice command:', command);
+                    
+                    if (command.includes('next') || command.includes('continue')) {
+                        this.nextStep();
+                    } else if (command.includes('repeat') || command.includes('again')) {
+                        this.speakCurrentStep();
+                    } else if (command.includes('stop') || command.includes('pause')) {
+                        this.stopVoiceNavigation();
+                    } else {
+                        // Auto-advance if unclear
+                        setTimeout(() => {
+                            if (this.voiceNavActive) {
+                                this.nextStep();
+                            }
+                        }, 2000);
+                    }
+                };
+                
+                recognition.onerror = (event) => {
+                    console.error('Speech recognition error:', event.error);
+                    // Auto-advance on error
+                    setTimeout(() => {
+                        if (this.voiceNavActive) {
+                            this.nextStep();
+                        }
+                    }, 3000);
+                };
+                
+                recognition.start();
+            }
+            
+            nextStep() {
+                this.currentStep++;
+                this.speakCurrentStep();
+            }
+            
+            initializeNutritionChart() {
+                const chartContainer = document.getElementById('nutrition-chart');
+                if (!chartContainer || !window.echarts) return;
+                
+                const chart = echarts.init(chartContainer);
+                
+                // Get nutrition values from the recipe data or use defaults
+                const protein = this.recipe.nutrition?.protein?.amount || 25;
+                const carbs = this.recipe.nutrition?.carbs?.amount || 30;
+                const fat = this.recipe.nutrition?.fat?.amount || 15;
+                
+                const option = {
+                    tooltip: {
+                        trigger: 'item',
+                        formatter: '{b}: {c}g ({d}%)'
+                    },
+                    series: [{
+                        name: 'Nutrition',
+                        type: 'pie',
+                        radius: ['40%', '70%'],
+                        avoidLabelOverlap: true,
+                        itemStyle: {
+                            borderRadius: 10,
+                            borderColor: '#fff',
+                            borderWidth: 2
+                        },
+                        label: {
+                            show: true,
+                            fontSize: 14,
+                            fontWeight: 'bold'
+                        },
+                        emphasis: {
+                            label: {
+                                show: true,
+                                fontSize: 16,
+                                fontWeight: 'bold'
+                            },
+                            itemStyle: {
+                                shadowBlur: 10,
+                                shadowOffsetX: 0,
+                                shadowColor: 'rgba(0, 0, 0, 0.5)'
+                            }
+                        },
+                        data: [
+                            { value: protein, name: 'Protein', itemStyle: { color: '#68D391' } },
+                            { value: carbs, name: 'Carbs', itemStyle: { color: '#22543D' } },
+                            { value: fat, name: 'Fat', itemStyle: { color: '#ED8936' } }
+                        ]
+                    }]
+                };
+                
+                chart.setOption(option);
+                
+                // Resize chart on window resize
+                window.addEventListener('resize', () => {
+                    chart.resize();
+                });
+            }
+            
+            setupTimerSocket() {
+                console.log('🔌 Setting up timer socket...');
+                
+                // Simple approach: Wait for voiceSocket to exist, then set up listeners
+                // Don't wait for 'connected' flag as it might not be reliable
+                let attempts = 0;
+                const maxAttempts = 20;
+                
+                const checkSocket = setInterval(() => {
+                    attempts++;
+                    console.log(`🔍 Socket check #${attempts}`);
+                    
+                    if (window.voiceSocket) {
+                        clearInterval(checkSocket);
+                        console.log('✅ Socket found! Setting up timer listeners...');
+                        this.initTimerListeners();
+                        
+                        // Wait a bit for socket to fully connect, then request timers
+                        setTimeout(() => {
+                            console.log('📤 Requesting initial timers list...');
+                            window.voiceSocket.emit('get_timers');
+                        }, 500);
+                        
+                        // Set up periodic timer list refresh (every 5 seconds)
+                        this.timerRefreshInterval = setInterval(() => {
+                            if (window.voiceSocket) {
+                                window.voiceSocket.emit('get_timers');
+                            }
+                        }, 5000);
+                    }
+                    
+                    // Give up after max attempts
+                    if (attempts >= maxAttempts) {
+                        clearInterval(checkSocket);
+                        console.error(`❌ Socket not found after ${maxAttempts} attempts`);
+                    }
+                }, 200);
+            }
+            
+            initTimerListeners() {
+                const socket = window.voiceSocket;
+                console.log('🎧 Adding timer event listeners...');
+                
+                // Remove any existing listeners first to avoid duplicates
+                socket.off('timers_list');
+                socket.off('timer_set');
+                socket.off('timer_update');
+                socket.off('timer_finished');
+                socket.off('timer_deleted');
+                
+                // Listen for timer events
+                socket.on('timers_list', (data) => {
+                    console.log('📋 Timers list received in recipe page:', data);
+                    this.displayActiveTimers(data);
+                });
+                
+                socket.on('timer_set', (data) => {
+                    console.log('⏱️ Timer set in recipe page:', data);
+                    // Request updated timers list
+                    console.log('📤 Requesting updated timers after timer_set...');
+                    socket.emit('get_timers');
+                });
+                
+                socket.on('timer_update', (data) => {
+                    console.log('🔄 Timer update in recipe page:', data);
+                    
+                    // Backend sends single timer object with timer_id and remaining_time
+                    if (data.timer_id !== undefined && data.remaining_time !== undefined) {
+                        const countdownElement = document.getElementById(`countdown-${data.timer_id}`);
+                        if (countdownElement) {
+                            countdownElement.textContent = data.remaining_time;
+                            console.log(`⏱️ Updated countdown for timer ${data.timer_id}: ${data.remaining_time}`);
+                        } else {
+                            console.log(`⚠️ No countdown element found for timer ${data.timer_id}`);
+                        }
+                    }
+                });
+                
+                socket.on('timer_finished', (data) => {
+                    console.log('✅ Timer finished in recipe page:', data);
+                    
+                    // Show visual alert
+                    this.showTimerFinishedAlert(data);
+                    
+                    // Speak the timer finished message
+                    const speechMessage = data.message || `Your ${data.name} timer has finished!`;
+                    console.log('🔊 Speaking timer finished message:', speechMessage);
+                    this.speak(speechMessage);
+                    
+                    // Request updated timers list
+                    socket.emit('get_timers');
+                });
+                
+                socket.on('timer_deleted', (data) => {
+                    console.log('🗑️ Timer deleted in recipe page:', data);
+                    // Request updated list
+                    socket.emit('get_timers');
+                });
+                
+                // Listen for conversion results
+                socket.on('conversion_result', (data) => {
+                    console.log('🔢 Conversion result in recipe page:', data);
+                    this.displayConversionResult(data);
+                });
+                
+                // Listen for serving size changes (from voice control)
+                socket.on('serving_size_changed', (data) => {
+                    console.log('🍽️ Serving size changed in recipe page:', data);
+                    if (data.servings) {
+                        this.updateServingSize(data.servings);
+                    }
+                });
+                
+                // Also listen for serving_updated (from backend API)
+                socket.on('serving_updated', (data) => {
+                    console.log('🍽️ Serving size updated in recipe page:', data);
+                    if (data.servings) {
+                        this.updateServingSize(data.servings);
+                    }
+                });
+                
+                // Also listen for window events (from voice control)
+                window.addEventListener('servingUpdated', (event) => {
+                    console.log('🍽️ Serving updated via window event:', event.detail);
+                    if (event.detail.servings) {
+                        this.updateServingSize(event.detail.servings);
+                    }
+                });
+                
+                console.log('✅ Timer listeners added successfully');
+            }
+            
+            displayActiveTimers(data) {
+                console.log('🎨 displayActiveTimers called with:', data);
+                const container = document.getElementById('timers-container');
+                if (!container) {
+                    console.error('❌ Timers container not found in DOM!');
+                    return;
+                }
+                
+                console.log('✅ Timers container found:', container);
+                
+                // Handle both formats: {timers: [...]} and direct array
+                let timersList = [];
+                if (data.timers && Array.isArray(data.timers)) {
+                    timersList = data.timers;
+                } else if (Array.isArray(data)) {
+                    // Convert timer_update format to display format
+                    timersList = data.map(t => ({
+                        id: t.timer_id,
+                        name: t.name,
+                        remaining: t.remaining_time,
+                        duration_minutes: Math.ceil((t.remaining_minutes || 0) + (t.remaining_seconds || 0) / 60)
+                    }));
+                }
+                
+                container.innerHTML = '';
+                
+                if (timersList.length > 0) {
+                    console.log(`📝 Displaying ${timersList.length} timer(s)`);
+                    timersList.forEach(timer => {
+                        console.log('🔨 Creating timer element for:', timer);
+                        const timerElement = document.createElement('div');
+                        timerElement.id = `timer-${timer.id}`;
+                        timerElement.className = 'timer-item';
+                        timerElement.innerHTML = `
+                            <div class="timer-name">${timer.name}</div>
+                            <div class="timer-countdown" id="countdown-${timer.id}">${timer.remaining}</div>
+                            <div class="timer-duration">Duration: ${timer.duration_minutes} minutes</div>
+                            <button class="timer-delete-btn" onclick="window.deleteBackendTimer(${timer.id})">
+                                <i class="fas fa-trash"></i> Delete Timer
+                            </button>
+                        `;
+                        container.appendChild(timerElement);
+                        console.log('✅ Timer element added to container');
+                    });
+                } else {
+                    console.log('📭 No active timers, showing empty state');
+                    container.innerHTML = `
+                        <div class="no-timers">
+                            <i class="fas fa-hourglass-half"></i>
+                            <p>No active timers</p>
+                        </div>
+                    `;
+                }
+            }
+            
+            updateTimerDisplay(data) {
+                const countdownElement = document.getElementById(`countdown-${data.id}`);
+                if (countdownElement && data.remaining) {
+                    countdownElement.textContent = data.remaining;
+                }
+            }
+            
+            displayConversionResult(data) {
+                console.log('📊 Displaying conversion result:', data);
+                
+                // Show conversion result in a notification or modal
+                if (data.error) {
+                    this.showNotification(`❌ ${data.error}`, 'error');
+                } else if (data.result) {
+                    const message = `${data.amount || ''} ${data.from_unit || ''} = ${data.result}`;
+                    this.showNotification(`🔢 ${message}`, 'success');
+                    
+                    // Also update conversion display if it exists
+                    const resultDiv = document.getElementById('conversion-result');
+                    if (resultDiv) {
+                        resultDiv.innerHTML = `
+                            <div class="bg-sage bg-opacity-10 border-2 border-sage rounded-lg p-4 mb-4">
+                                <div class="text-center">
+                                    <div class="text-lg font-semibold text-charcoal">${data.amount} ${data.from_unit}</div>
+                                    <div class="text-copper text-2xl my-2">⬇️</div>
+                                    <div class="text-2xl font-bold text-sage">${data.result}</div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                }
+            }
+            
+            updateServingSize(newServings) {
+                console.log('🍽️ Updating serving size to:', newServings);
+                
+                // Update the serving count (the big number)
+                const servingCountElement = document.getElementById('serving-count');
+                if (servingCountElement) {
+                    servingCountElement.textContent = newServings;
+                }
+                
+                // Update the servings display text
+                const servingsElement = document.getElementById('servings-display');
+                if (servingsElement) {
+                    servingsElement.textContent = `${newServings} servings`;
+                }
+                
+                // Update internal state
+                this.servings = parseInt(newServings);
+                
+                // Recalculate and update ingredient quantities
+                this.updateIngredientQuantities();
+                
+                // Show notification
+                this.showNotification(`🍽️ Serving size updated to ${newServings}`, 'success');
+            }
+            
+            updateIngredientQuantities() {
+                // Calculate scaling factor
+                const scaleFactor = this.servings / this.originalServings;
+                
+                // Update all ingredient quantities in the DOM
+                const ingredientElements = document.querySelectorAll('[data-original-amount]');
+                ingredientElements.forEach(element => {
+                    const originalAmount = parseFloat(element.dataset.originalAmount);
+                    if (!isNaN(originalAmount)) {
+                        const newAmount = (originalAmount * scaleFactor).toFixed(2);
+                        element.textContent = newAmount;
+                    }
+                });
+            }
+            
+            showTimerFinishedAlert(data) {
+                // Show a visual alert for timer completion
+                const timerName = data.name || 'Timer';
+                const message = data.message || `${timerName} has finished!`;
+                
+                // Create modal overlay
+                const overlay = document.createElement('div');
+                overlay.className = 'fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-[10000]';
+                overlay.style.backdropFilter = 'blur(5px)';
+                
+                // Create alert box
+                const alertBox = document.createElement('div');
+                alertBox.className = 'bg-gradient-to-r from-copper to-sage text-white p-10 rounded-2xl shadow-2xl text-center max-w-md mx-4';
+                alertBox.style.animation = 'scaleIn 0.3s ease';
+                
+                alertBox.innerHTML = `
+                    <div style="font-size: 80px; margin-bottom: 20px; animation: bounce 1s infinite;">⏰</div>
+                    <h2 class="text-4xl font-playfair font-bold mb-4">Timer Complete!</h2>
+                    <p class="text-xl mb-6 opacity-95">${message}</p>
+                    <button id="dismissTimerAlert" class="bg-white text-copper px-8 py-3 rounded-full font-bold text-lg shadow-lg hover:scale-105 transition-transform">
+                        Got It! ✓
+                    </button>
+                `;
+                
+                overlay.appendChild(alertBox);
+                document.body.appendChild(overlay);
+                
+                // Add animations
+                const style = document.createElement('style');
+                style.textContent = `
+                    @keyframes scaleIn {
+                        from { transform: scale(0.8); opacity: 0; }
+                        to { transform: scale(1); opacity: 1; }
+                    }
+                    @keyframes bounce {
+                        0%, 100% { transform: translateY(0); }
+                        50% { transform: translateY(-10px); }
+                    }
+                `;
+                document.head.appendChild(style);
+                
+                // Dismiss handler
+                const dismissBtn = overlay.querySelector('#dismissTimerAlert');
+                dismissBtn.addEventListener('click', () => {
+                    overlay.style.animation = 'fadeOut 0.3s ease';
+                    setTimeout(() => {
+                        overlay.remove();
+                        style.remove();
+                    }, 300);
+                });
+                
+                // Auto-dismiss after 10 seconds
+                setTimeout(() => {
+                    if (document.body.contains(overlay)) {
+                        overlay.style.animation = 'fadeOut 0.3s ease';
+                        setTimeout(() => {
+                            overlay.remove();
+                            style.remove();
+                        }, 300);
+                    }
+                }, 10000);
+            }
+            
+            showNotification(message, type = 'info') {
+                // Create notification element
+                const notification = document.createElement('div');
+                notification.className = `fixed top-20 right-4 z-50 px-6 py-4 rounded-lg shadow-lg transform transition-all duration-300 ${
+                    type === 'success' ? 'bg-sage text-white' :
+                    type === 'error' ? 'bg-red-500 text-white' :
+                    'bg-copper text-white'
+                }`;
+                notification.textContent = message;
+                
+                document.body.appendChild(notification);
+                
+                // Animate in
+                setTimeout(() => {
+                    notification.style.transform = 'translateX(0)';
+                }, 10);
+                
+                // Remove after 3 seconds
+                setTimeout(() => {
+                    notification.style.transform = 'translateX(400px)';
+                    setTimeout(() => notification.remove(), 300);
+                }, 3000);
+            }
+        }
+        
+        // Global function to delete timer (called from onclick)
+        window.deleteBackendTimer = function(timerId) {
+            if (window.voiceSocket && window.voiceSocket.connected) {
+                console.log('🗑️ Deleting timer:', timerId);
+                window.voiceSocket.emit('delete_timer', { timer_id: timerId });
+            } else {
+                console.error('❌ Socket not connected');
+            }
+        };
+        
+        // =================================================================
+        // FAVORITES FUNCTIONALITY
+        // =================================================================
+        
+        let isFavorited = false;
+        let recipeId = '{{ recipe.id if recipe else "" }}';
+        let recipeTitle = '{{ recipe.title if recipe else "" }}';
+        let recipeImage = '{{ recipe.image if recipe else "" }}';
+        let recipeSource = 'spoonacular'; // Default source, update based on actual source
+        
+        // Check favorite status on page load
+        async function checkFavoriteStatus() {
+            if (!recipeId) return;
+            
+            try {
+                const response = await fetch(`/api/favorites/check/${recipeId}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    isFavorited = data.is_favorited;
+                    updateFavoriteButton();
+                }
+            } catch (error) {
+                console.error('Error checking favorite status:', error);
+            }
+        }
+        
+        // Toggle favorite status
+        async function toggleFavorite() {
+            if (!recipeId) {
+                showNotification('Recipe ID not found', 'error');
+                return;
+            }
+            
+            try {
+                if (isFavorited) {
+                    // Remove from favorites
+                    const response = await fetch(`/api/favorites/${recipeId}`, {
+                        method: 'DELETE'
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        isFavorited = false;
+                        updateFavoriteButton();
+                        showNotification('Removed from favorites', 'success');
+                    } else {
+                        showNotification(data.message || 'Failed to remove from favorites', 'error');
+                    }
+                } else {
+                    // Add to favorites
+                    const response = await fetch('/api/favorites/recipe', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            recipe_id: recipeId,
+                            recipe_title: recipeTitle,
+                            recipe_image: recipeImage,
+                            recipe_source: recipeSource
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        isFavorited = true;
+                        updateFavoriteButton();
+                        showNotification('Added to favorites!', 'success');
+                    } else {
+                        showNotification(data.message || 'Failed to add to favorites', 'error');
+                    }
+                }
+            } catch (error) {
+                console.error('Error toggling favorite:', error);
+                showNotification('An error occurred', 'error');
+            }
+        }
+        
+        // Update favorite button appearance
+        function updateFavoriteButton() {
+            const btn = document.getElementById('favorite-btn');
+            if (!btn) return;
+            
+            if (isFavorited) {
+                btn.innerHTML = `
+                    <i class="fas fa-heart"></i>
+                    <span class="hidden sm:inline">Favorited</span>
+                `;
+                btn.style.background = 'rgba(237, 73, 86, 0.9)';
+                btn.style.borderColor = 'rgba(255, 255, 255, 0.5)';
+            } else {
+                btn.innerHTML = `
+                    <i class="far fa-heart"></i>
+                    <span class="hidden sm:inline">Add to Favorites</span>
+                `;
+                btn.style.background = 'rgba(255, 255, 255, 0.2)';
+                btn.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+            }
+        }
+        
+        // Save notes function
+        function saveNotes() {
+            const notes = document.getElementById('personalNotes').value;
+            
+            if (!notes.trim()) {
+                showNotification('⚠️ Please write some notes first', 'error');
+                return;
+            }
+            
+            const recipeId = "{{ recipe.id if recipe else '' }}";
+            const recipeTitle = "{{ recipe.title if recipe else '' }}";
+            
+            if (!recipeId) {
+                showNotification('❌ Recipe ID not found', 'error');
+                return;
+            }
+            
+            const noteData = {
+                video_id: recipeId,  // Reusing video_id field for recipe notes
+                title: recipeTitle,
+                notes: notes,
+                watch_url: window.location.href  // Save current recipe page URL
+            };
+            
+            fetch('/api/video/notes', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(noteData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification('✅ Notes saved successfully!', 'success');
+                } else {
+                    showNotification('❌ Failed to save notes', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error saving notes:', error);
+                showNotification('❌ Error saving notes', 'error');
+            });
+        }
+        
+        // Show notification
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                background: ${type === 'success' ? '#28a745' : type === 'error' ? '#dc3545' : '#ff6b35'};
+                color: white;
+                padding: 15px 25px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                z-index: 10000;
+                transform: translateX(400px);
+                transition: transform 0.3s ease;
+                font-size: 14px;
+                font-weight: 500;
+            `;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            // Animate in
+            setTimeout(() => {
+                notification.style.transform = 'translateX(0)';
+            }, 10);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                notification.style.transform = 'translateX(400px)';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+        
+        // Initialize when DOM is ready
+        console.log('📝 Setting up DOMContentLoaded listener...');
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🎯 DOMContentLoaded fired! Creating RecipeDetailManager...');
+            const manager = new RecipeDetailManager();
+            console.log('✅ RecipeDetailManager created:', manager);
+            
+            // Check favorite status
+            checkFavoriteStatus();
+            
+            // Load saved notes
+            const recipeId = "{{ recipe.id if recipe else '' }}";
+            if (recipeId) {
+                fetch(`/api/video/notes/${recipeId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success && data.notes) {
+                            document.getElementById('personalNotes').value = data.notes;
+                        }
+                    })
+                    .catch(error => console.log('No saved notes found'));
+            }
+            
+            // Request notification permission for timer alerts
+            if ('Notification' in window && Notification.permission === 'default') {
+                Notification.requestPermission().then(permission => {
+                    console.log('Notification permission:', permission);
+                });
+            }
+        });
+        console.log('✅ Script loaded successfully');
+    </script>
+    
+    <!-- Socket.IO for Voice Control TTS -->
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    
+    <!-- Global Voice Control -->
+    <script src="{{ url_for('static', filename='js/voice-control-global.js') }}"></script>
+</body>
+</html>
+

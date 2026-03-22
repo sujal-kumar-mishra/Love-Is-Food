@@ -1,0 +1,296 @@
+/* ============================================
+   BACKGROUND PATTERNS SYSTEM
+   Love-Is-Food Kitchen Assistant
+   ============================================
+   
+   SVG-based and CSS patterns for visual depth
+   Usage: Add class to any element
+   ============================================ */
+
+/* ============================================
+   GEOMETRIC PATTERNS
+   ============================================ */
+
+.pattern-dots {
+  background-image: radial-gradient(circle, rgba(237, 137, 54, 0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.pattern-dots-dense {
+  background-image: radial-gradient(circle, rgba(237, 137, 54, 0.15) 1.5px, transparent 1.5px);
+  background-size: 12px 12px;
+}
+
+.pattern-grid {
+  background-image: 
+    linear-gradient(rgba(237, 137, 54, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(237, 137, 54, 0.05) 1px, transparent 1px);
+  background-size: 30px 30px;
+}
+
+.pattern-diagonal-lines {
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 10px,
+    rgba(237, 137, 54, 0.05) 10px,
+    rgba(237, 137, 54, 0.05) 11px
+  );
+}
+
+.pattern-cross-hatch {
+  background-image: 
+    repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(237, 137, 54, 0.03) 10px, rgba(237, 137, 54, 0.03) 11px),
+    repeating-linear-gradient(-45deg, transparent, transparent 10px, rgba(104, 211, 145, 0.03) 10px, rgba(104, 211, 145, 0.03) 11px);
+}
+
+.pattern-hexagons {
+  background-image:
+    linear-gradient(60deg, rgba(237, 137, 54, 0.08) 25%, transparent 25%),
+    linear-gradient(-60deg, rgba(237, 137, 54, 0.08) 25%, transparent 25%),
+    linear-gradient(60deg, transparent 75%, rgba(237, 137, 54, 0.08) 75%),
+    linear-gradient(-60deg, transparent 75%, rgba(237, 137, 54, 0.08) 75%);
+  background-size: 40px 70px;
+  background-position: 0 0, 0 0, 20px 35px, 20px 35px;
+}
+
+.pattern-triangles {
+  background-image:
+    linear-gradient(135deg, rgba(104, 211, 145, 0.05) 25%, transparent 25%),
+    linear-gradient(225deg, rgba(104, 211, 145, 0.05) 25%, transparent 25%),
+    linear-gradient(45deg, rgba(104, 211, 145, 0.05) 25%, transparent 25%),
+    linear-gradient(315deg, rgba(104, 211, 145, 0.05) 25%, transparent 25%);
+  background-position: 20px 0, 20px 0, 0 0, 0 0;
+  background-size: 40px 40px;
+  background-repeat: repeat;
+}
+
+/* ============================================
+   WAVE PATTERNS
+   ============================================ */
+
+.pattern-waves {
+  background-image: url("data:image/svg+xml,%3Csvg width='100' height='20' viewBox='0 0 100 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 10 Q 25 0, 50 10 T 100 10' fill='none' stroke='rgba(237,137,54,0.1)' stroke-width='2'/%3E%3C/svg%3E");
+  background-repeat: repeat-x;
+  background-size: 100px 20px;
+}
+
+.pattern-waves-stacked {
+  background-image: 
+    url("data:image/svg+xml,%3Csvg width='100' height='20' viewBox='0 0 100 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 10 Q 25 0, 50 10 T 100 10' fill='none' stroke='rgba(237,137,54,0.08)' stroke-width='2'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg width='100' height='20' viewBox='0 0 100 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 15 Q 25 5, 50 15 T 100 15' fill='none' stroke='rgba(104,211,145,0.08)' stroke-width='2'/%3E%3C/svg%3E");
+  background-position: 0 0, 0 10px;
+  background-repeat: repeat-x;
+  background-size: 100px 20px;
+}
+
+/* ============================================
+   CULINARY-THEMED PATTERNS
+   ============================================ */
+
+.pattern-chef-hats {
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg opacity='0.08'%3E%3Cpath d='M20 35 Q20 25 23 20 Q26 17 30 17 Q34 17 37 20 Q40 25 40 35 L40 45 L20 45 Z' fill='%23ED8936'/%3E%3Crect x='20' y='40' width='20' height='2' fill='%23ED8936'/%3E%3C/g%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 60px 60px;
+}
+
+.pattern-utensils {
+  background-image: url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg opacity='0.05'%3E%3Cline x1='30' y1='20' x2='30' y2='60' stroke='%2368D391' stroke-width='2'/%3E%3Cline x1='27' y1='20' x2='27' y2='35' stroke='%2368D391' stroke-width='2'/%3E%3Cline x1='33' y1='20' x2='33' y2='35' stroke='%2368D391' stroke-width='2'/%3E%3Cline x1='50' y1='20' x2='50' y2='60' stroke='%23ED8936' stroke-width='2'/%3E%3Cpath d='M48 20 L52 20 L52 15 L48 18 Z' fill='%23ED8936'/%3E%3C/g%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 80px 80px;
+}
+
+/* ============================================
+   GRADIENT MESH OVERLAYS
+   ============================================ */
+
+.gradient-mesh-copper {
+  background: 
+    radial-gradient(circle at 20% 30%, rgba(237, 137, 54, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 80% 70%, rgba(255, 149, 112, 0.12) 0%, transparent 50%),
+    radial-gradient(circle at 50% 50%, rgba(237, 137, 54, 0.08) 0%, transparent 60%);
+}
+
+.gradient-mesh-sage {
+  background: 
+    radial-gradient(circle at 30% 20%, rgba(104, 211, 145, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 70% 80%, rgba(134, 239, 172, 0.12) 0%, transparent 50%),
+    radial-gradient(circle at 50% 50%, rgba(104, 211, 145, 0.08) 0%, transparent 60%);
+}
+
+.gradient-mesh-brand {
+  background: 
+    radial-gradient(circle at 20% 20%, rgba(237, 137, 54, 0.12) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(104, 211, 145, 0.12) 0%, transparent 50%),
+    radial-gradient(circle at 50% 50%, rgba(255, 181, 148, 0.08) 0%, transparent 60%);
+}
+
+/* ============================================
+   ANIMATED FLOATING SHAPES
+   ============================================ */
+
+.floating-shapes {
+  position: relative;
+  overflow: hidden;
+}
+
+.floating-shapes::before,
+.floating-shapes::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.05;
+  animation: float 20s ease-in-out infinite;
+}
+
+.floating-shapes::before {
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(237, 137, 54, 0.3) 0%, transparent 70%);
+  top: -150px;
+  left: -150px;
+  animation-delay: 0s;
+}
+
+.floating-shapes::after {
+  width: 250px;
+  height: 250px;
+  background: radial-gradient(circle, rgba(104, 211, 145, 0.3) 0%, transparent 70%);
+  bottom: -125px;
+  right: -125px;
+  animation-delay: -10s;
+  animation-direction: reverse;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  25% {
+    transform: translate(30px, -30px) scale(1.1);
+  }
+  50% {
+    transform: translate(-20px, -50px) scale(0.9);
+  }
+  75% {
+    transform: translate(40px, -20px) scale(1.05);
+  }
+}
+
+/* ============================================
+   SPECIALTY BACKGROUNDS
+   ============================================ */
+
+.bg-hero-pattern {
+  background-image: 
+    radial-gradient(circle at 20% 30%, rgba(237, 137, 54, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 80% 70%, rgba(104, 211, 145, 0.08) 0%, transparent 50%),
+    url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg opacity='0.03'%3E%3Ccircle cx='30' cy='30' r='2' fill='%232D3748'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 100% 100%, 100% 100%, 30px 30px;
+}
+
+.bg-card-pattern {
+  background-image: 
+    linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(247, 250, 252, 0.95) 100%),
+    radial-gradient(circle at 10% 10%, rgba(237, 137, 54, 0.05) 0%, transparent 50%);
+}
+
+.bg-section-divider {
+  background-image: 
+    linear-gradient(to bottom, transparent 45%, rgba(237, 137, 54, 0.1) 50%, transparent 55%),
+    repeating-linear-gradient(90deg, transparent, transparent 10px, rgba(104, 211, 145, 0.05) 10px, rgba(104, 211, 145, 0.05) 11px);
+}
+
+/* ============================================
+   TEXTURE OVERLAYS
+   ============================================ */
+
+.texture-noise {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+}
+
+.texture-paper {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='paper'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.04' numOctaves='5' result='noise'/%3E%3CfeDiffuseLighting in='noise' lighting-color='white' surfaceScale='2'%3E%3CfeDistantLight azimuth='45' elevation='60'/%3E%3C/feDiffuseLighting%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23paper)' opacity='0.08'/%3E%3C/svg%3E");
+}
+
+/* ============================================
+   COMBINED PATTERN CLASSES
+   ============================================ */
+
+.hero-background {
+  background: 
+    linear-gradient(135deg, rgba(237, 137, 54, 0.05) 0%, rgba(104, 211, 145, 0.05) 100%),
+    radial-gradient(circle at 20% 30%, rgba(237, 137, 54, 0.1) 0%, transparent 50%),
+    url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='50' cy='50' r='1' fill='rgba(45,55,72,0.05)'/%3E%3C/svg%3E");
+  background-size: 100% 100%, 100% 100%, 20px 20px;
+}
+
+.feature-card-bg {
+  background: 
+    linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(247, 250, 252, 0.9) 100%),
+    radial-gradient(circle at top right, rgba(104, 211, 145, 0.08) 0%, transparent 70%),
+    radial-gradient(circle at bottom left, rgba(237, 137, 54, 0.08) 0%, transparent 70%);
+}
+
+.profile-header-bg {
+  background: 
+    linear-gradient(135deg, rgba(237, 137, 54, 0.9) 0%, rgba(217, 113, 33, 0.95) 100%),
+    url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg opacity='0.15'%3E%3Cpath d='M20 35 Q20 25 23 20 Q26 17 30 17 Q34 17 37 20 Q40 25 40 35 L40 45 L20 45 Z' fill='white'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 100% 100%, 60px 60px;
+}
+
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
+
+.pattern-overlay {
+  position: relative;
+}
+
+.pattern-overlay::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Apply specific patterns to overlay */
+.pattern-overlay.dots::before {
+  background-image: radial-gradient(circle, rgba(237, 137, 54, 0.08) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.pattern-overlay.waves::before {
+  background-image: url("data:image/svg+xml,%3Csvg width='100' height='20' viewBox='0 0 100 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 10 Q 25 0, 50 10 T 100 10' fill='none' stroke='rgba(255,255,255,0.1)' stroke-width='2'/%3E%3C/svg%3E");
+  background-repeat: repeat-x;
+  background-size: 100px 20px;
+}
+
+/* ============================================
+   RESPONSIVE ADJUSTMENTS
+   ============================================ */
+
+@media (max-width: 768px) {
+  .pattern-hexagons {
+    background-size: 30px 52px;
+    background-position: 0 0, 0 0, 15px 26px, 15px 26px;
+  }
+  
+  .floating-shapes::before {
+    width: 200px;
+    height: 200px;
+  }
+  
+  .floating-shapes::after {
+    width: 150px;
+    height: 150px;
+  }
+}
+
+/* ============================================
+   END OF PATTERNS SYSTEM
+   ============================================ */

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}Kitchen Assistant AI{% endblock %}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet" />
+  <!-- Global Design System -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/color-system.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/patterns.css') }}" />
+  {% block head_extra %}{% endblock %}
+  <style>
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--gradient-neutral);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    main { flex: 1; display: flex; flex-direction: column; }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); border: 0; }
+  </style>
+</head>
+<body>
+  <!-- Inline SVG Icon Sprite (cached with document) -->
+  {% include 'icons_sprite.html' %}
+  <main id="main" role="main" tabindex="-1">
+    {% block content %}{% endblock %}
+  </main>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

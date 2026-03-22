@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <defs>
+    <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFD700;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FFA500;stop-opacity:1" />
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Badge Background -->
+  <circle cx="100" cy="100" r="80" fill="url(#goldGradient)" filter="url(#glow)"/>
+  <circle cx="100" cy="100" r="70" fill="#FFFFFF" opacity="0.95"/>
+  <circle cx="100" cy="100" r="65" fill="none" stroke="url(#goldGradient)" stroke-width="4"/>
+  
+  <!-- Trophy Icon -->
+  <g transform="translate(100, 95)" fill="url(#goldGradient)">
+    <path d="M-25 -15 L-25 -20 Q-25 -22 -23 -22 L23 -22 Q25 -22 25 -20 L25 -15" stroke="url(#goldGradient)" stroke-width="2" fill="none"/>
+    <rect x="-20" y="-15" width="40" height="30" rx="5" fill="url(#goldGradient)"/>
+    <rect x="-15" y="15" width="30" height="3" fill="#FFA500"/>
+    <path d="M-10 18 L-10 25 M10 18 L10 25" stroke="#FFA500" stroke-width="3" stroke-linecap="round"/>
+    <rect x="-15" y="25" width="30" height="3" fill="#FFA500"/>
+  </g>
+  
+  <!-- Stars -->
+  <polygon points="100,45 105,55 116,56 108,64 110,75 100,70 90,75 92,64 84,56 95,55" fill="#FFD700"/>
+  
+  <!-- Badge Ribbon -->
+  <path d="M70 160 L70 195 L100 177 L130 195 L130 160" fill="url(#goldGradient)" opacity="0.9"/>
+  
+  <!-- Title Text -->
+  <text x="100" y="140" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#FFA500">RECIPE MASTER</text>
+</svg>

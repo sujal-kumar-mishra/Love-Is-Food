@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ video.title }} - Kitchen Assistant</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        copper: '#ED8936',
+                        sage: '#68D391',
+                        charcoal: '#2D3748',
+                        cream: '#F7FAFC'
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Anime.js for animations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+        
+        * {
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            min-height: 100vh;
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #ED8936 0%, #68D391 100%);
+        }
+        
+        .gradient-card {
+            background: linear-gradient(135deg, rgba(237, 137, 54, 0.1) 0%, rgba(104, 211, 145, 0.1) 100%);
+            border: 1px solid rgba(237, 137, 54, 0.2);
+        }
+        
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 aspect ratio */
+            height: 0;
+            overflow: hidden;
+            border-radius: 1rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        .ingredient-tag {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            transition: all 0.3s ease;
+        }
+        
+        .ingredient-tag:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(245, 87, 108, 0.3);
+        }
+        
+        .step-card {
+            background: linear-gradient(135deg, rgba(76, 200, 200, 0.1) 0%, rgba(32, 156, 238, 0.1) 100%);
+            border-left: 4px solid #4cc8c8;
+            transition: all 0.3s ease;
+        }
+        
+        .step-card:hover {
+            transform: translateX(8px);
+            box-shadow: 0 8px 24px rgba(76, 200, 200, 0.2);
+        }
+        
+        .related-video-card {
+            background: linear-gradient(135deg, rgba(237, 137, 54, 0.05) 0%, rgba(104, 211, 145, 0.05) 100%);
+            border: 1px solid rgba(237, 137, 54, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .related-video-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 32px rgba(237, 137, 54, 0.2);
+            border-color: rgba(237, 137, 54, 0.3);
+        }
+        
+        .action-button {
+            background: linear-gradient(135deg, #ED8936 0%, #68D391 100%);
+            transition: all 0.3s ease;
+        }
+        
+        .action-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(237, 137, 54, 0.4);
+        }
+        
+        .back-button {
+            background: linear-gradient(135deg, rgba(237, 137, 54, 0.1) 0%, rgba(104, 211, 145, 0.1) 100%);
+            border: 1px solid rgba(237, 137, 54, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .back-button:hover {
+            background: linear-gradient(135deg, rgba(237, 137, 54, 0.2) 0%, rgba(104, 211, 145, 0.2) 100%);
+            transform: translateX(-4px);
+        }
+        
+        .channel-badge {
+            background: linear-gradient(135deg, #FF0000 0%, #CC0000 100%);
+        }
+        
+        .stats-icon {
+            color: #ED8936;
+        }
+        
+        .section-header {
+            background: linear-gradient(135deg, #ED8936 0%, #68D391 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        /* Smooth scroll */
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #ED8936 0%, #68D391 100%);
+            border-radius: 5px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #68D391 0%, #ED8936 100%);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-full">
+    <!-- Back Button -->
+    <div class="container mx-auto px-4 py-4">
+        <button onclick="window.location.href = '{{ url_for('main.index') }}'" class="back-button px-6 py-3 rounded-xl font-semibold text-gray-700 flex items-center gap-2 hover:gap-4">
+            <i class="fas fa-arrow-left"></i>
+            Back to Kitchen
+        </button>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container mx-auto px-4 pb-12 max-w-7xl">
+        
+        <!-- Video Player Section -->
+        <div class="mb-8" style="position: relative;">
+            <div class="video-container" id="videoPlayer">
+                <iframe 
+                    id="youtubePlayer"
+                    src="{{ video.embed_url }}?autoplay=0&rel=0&modestbranding=1&enablejsapi=1"
+                    allowfullscreen
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture">
+                </iframe>
+            </div>
+            
+            <!-- Auto-Mute Indicator -->
+            <div class="video-mute-indicator" id="videoMuteIndicator">
+                <span class="icon">🔇</span>
+                <span>Muted for voice command</span>
+            </div>
+        </div>
+
+        <!-- Video Info Section -->
+        <div class="gradient-card rounded-2xl p-8 mb-8 shadow-lg">
+            <div class="flex items-start justify-between flex-wrap gap-4 mb-6">
+                <div class="flex-1 min-w-[300px]">
+                    <div class="flex items-start justify-between gap-4 mb-4">
+                        <h1 class="text-4xl font-bold text-gray-800 flex-1">
+                            {{ video.title }}
+                        </h1>
+                        <button 
+                            id="favorite-btn" 
+                            onclick="toggleFavorite()"
+                            class="favorite-btn"
+                            title="Add to Favorites"
+                            style="background: linear-gradient(135deg, #ED8936 0%, #68D391 100%); border: 2px solid rgba(255, 255, 255, 0.5); color: white; padding: 12px 20px; border-radius: 50px; font-size: 16px; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; gap: 8px; white-space: nowrap; box-shadow: 0 4px 12px rgba(237, 137, 54, 0.3);"
+                        >
+                            <i class="far fa-heart"></i>
+                            <span class="hidden sm:inline">Favorite</span>
+                        </button>
+                    </div>
+                    
+                    <!-- Channel Info -->
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="channel-badge text-white px-4 py-2 rounded-full flex items-center gap-2">
+                            <i class="fab fa-youtube"></i>
+                            <span class="font-semibold">{{ video.channel_name }}</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Stats Row -->
+                    <div class="flex items-center gap-6 text-gray-600 flex-wrap">
+                        <div class="flex items-center gap-2">
+                            <i class="fas fa-eye stats-icon"></i>
+                            <span class="font-medium">{{ video.view_count }}</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <i class="fas fa-clock stats-icon"></i>
+                            <span class="font-medium">{{ video.duration }}</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <i class="fas fa-calendar stats-icon"></i>
+                            <span class="font-medium">{{ video.publish_date }}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="flex gap-3 flex-wrap" >
+                    <button onclick="saveToFavorites()" class="action-button text-white px-6 py-3 rounded-xl font-semibold flex items-center gap-2">
+                        <i class="fas fa-heart"></i>
+                        Save
+                    </button>
+                    <button onclick="shareVideo()" class="action-button text-white px-6 py-3 rounded-xl font-semibold flex items-center gap-2">
+                        <i class="fas fa-share-alt"></i>
+                        Share
+                    </button>
+                    <a href="{{ video.watch_url }}" target="_blank" class="action-button text-white px-6 py-3 rounded-xl font-semibold flex items-center gap-2">
+                        <i class="fab fa-youtube"></i>
+                        Watch on YouTube
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content Grid -->
+        <div class="grid lg:grid-cols-3 gap-8">
+            
+            <!-- Left Column - Ingredients & Steps -->
+            <div class="lg:col-span-2 space-y-8">
+                
+                <!-- Ingredients Section -->
+                {% if video.ingredients and video.ingredients|length > 0 %}
+                <div class="bg-white rounded-2xl shadow-lg p-8">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-pink-500 to-red-500 flex items-center justify-center">
+                            <i class="fas fa-carrot text-white text-xl"></i>
+                        </div>
+                        <h2 class="text-3xl font-bold section-header">Ingredients</h2>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {% for ingredient in video.ingredients %}
+                        <div class="ingredient-tag text-white px-4 py-3 rounded-xl font-medium flex items-center gap-2">
+                            <i class="fas fa-check-circle"></i>
+                            <span>{{ ingredient }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Recipe Steps Section -->
+                {% if video.steps and video.steps|length > 0 %}
+                <div class="bg-white rounded-2xl shadow-lg p-8">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-teal-400 to-blue-500 flex items-center justify-center">
+                            <i class="fas fa-list-ol text-white text-xl"></i>
+                        </div>
+                        <h2 class="text-3xl font-bold section-header">Instructions</h2>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        {% for step in video.steps %}
+                        <div class="step-card p-5 rounded-xl">
+                            <div class="flex gap-4">
+                                <div class="flex-shrink-0">
+                                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-teal-400 to-blue-500 flex items-center justify-center text-white font-bold">
+                                        {{ step.step_number }}
+                                    </div>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-gray-700 font-medium leading-relaxed">
+                                        {{ step.instruction }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Description Section -->
+                <div class="bg-white rounded-2xl shadow-lg p-8">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-copper to-sage flex items-center justify-center">
+                            <i class="fas fa-align-left text-white text-xl"></i>
+                        </div>
+                        <h2 class="text-3xl font-bold section-header">Description</h2>
+                    </div>
+                    
+                    <div class="prose max-w-none">
+                        <p class="text-gray-700 leading-relaxed whitespace-pre-wrap">{{ video.description or video.summary }}</p>
+                    </div>
+                </div>
+                
+            </div>
+            
+            <!-- Right Column - Related Videos & Notes -->
+            <div class="lg:col-span-1 space-y-8">
+                
+                <!-- Related Videos Section -->
+                {% if video.related_videos and video.related_videos|length > 0 %}
+                <div class="bg-white rounded-2xl shadow-lg p-6">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-pink-600 flex items-center justify-center">
+                            <i class="fab fa-youtube text-white"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold section-header">Related Videos</h3>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        {% for related in video.related_videos %}
+                        {% if related.video_id != 'search_redirect' %}
+                        <a href="/video/{{ related.video_id }}" class="related-video-card block p-4 rounded-xl">
+                            <div class="flex gap-3">
+                                <img src="{{ related.thumbnail }}" alt="{{ related.title }}" 
+                                     class="w-32 h-20 object-cover rounded-lg flex-shrink-0"
+                                     onerror="this.src='https://via.placeholder.com/120x90?text=Video'">
+                                <div class="flex-1 min-w-0">
+                                    <h4 class="font-semibold text-gray-800 text-sm line-clamp-2 mb-1">
+                                        {{ related.title }}
+                                    </h4>
+                                    <p class="text-xs text-gray-500">
+                                        <i class="fab fa-youtube text-red-500"></i>
+                                        Related Recipe
+                                    </p>
+                                </div>
+                            </div>
+                        </a>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Quick Actions -->
+                <div class="bg-white rounded-2xl shadow-lg p-6" style="display: none;">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-green-500 to-teal-600 flex items-center justify-center">
+                            <i class="fas fa-bolt text-white"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold section-header">Quick Actions</h3>
+                    </div>
+                    
+                    <div class="space-y-3">
+                        <button onclick="addToPlaylist()" class="w-full gradient-card hover:shadow-lg px-4 py-3 rounded-xl font-semibold text-gray-700 flex items-center justify-between transition-all">
+                            <span class="flex items-center gap-2">
+                                <i class="fas fa-list"></i>
+                                Add to Playlist
+                            </span>
+                            <i class="fas fa-chevron-right text-sm"></i>
+                        </button>
+                        
+                        <button onclick="setReminder()" class="w-full gradient-card hover:shadow-lg px-4 py-3 rounded-xl font-semibold text-gray-700 flex items-center justify-between transition-all">
+                            <span class="flex items-center gap-2">
+                                <i class="fas fa-bell"></i>
+                                Set Reminder
+                            </span>
+                            <i class="fas fa-chevron-right text-sm"></i>
+                        </button>
+                        
+                        <button onclick="downloadRecipe()" class="w-full gradient-card hover:shadow-lg px-4 py-3 rounded-xl font-semibold text-gray-700 flex items-center justify-between transition-all">
+                            <span class="flex items-center gap-2">
+                                <i class="fas fa-download"></i>
+                                Download Recipe
+                            </span>
+                            <i class="fas fa-chevron-right text-sm"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Personal Notes -->
+                <div class="bg-white rounded-2xl shadow-lg p-6">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-yellow-500 to-orange-600 flex items-center justify-center">
+                            <i class="fas fa-sticky-note text-white"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold section-header">My Notes</h3>
+                    </div>
+                    
+                    <textarea id="personalNotes" 
+                              class="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-copper focus:outline-none transition-colors resize-none"
+                              rows="6"
+                              placeholder="Add your personal notes, modifications, or tips..."></textarea>
+                    
+                    <button onclick="saveNotes()" class="w-full mt-3 action-button text-white px-4 py-3 rounded-xl font-semibold flex items-center justify-center gap-2">
+                        <i class="fas fa-save"></i>
+                        Save Notes
+                    </button>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // =================================================================
+        // FAVORITES FUNCTIONALITY
+        // =================================================================
+        
+        let isFavorited = false;
+        let videoId = "{{ video.video_id }}";
+        let videoTitle = "{{ video.title }}";
+        let videoThumbnail = "{{ video.thumbnail }}";
+        
+        // Check favorite status on page load
+        async function checkFavoriteStatus() {
+            if (!videoId) return;
+            
+            const recipeId = `video_${videoId}`;
+            
+            try {
+                const response = await fetch(`/api/favorites/check/${recipeId}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    isFavorited = data.is_favorited;
+                    updateFavoriteButton();
+                }
+            } catch (error) {
+                console.error('Error checking favorite status:', error);
+            }
+        }
+        
+        // Toggle favorite status
+        async function toggleFavorite() {
+            if (!videoId) {
+                showNotification('❌ Video ID not found', 'error');
+                return;
+            }
+            
+            const recipeId = `video_${videoId}`;
+            
+            try {
+                if (isFavorited) {
+                    // Remove from favorites
+                    const response = await fetch(`/api/favorites/${recipeId}`, {
+                        method: 'DELETE'
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        isFavorited = false;
+                        updateFavoriteButton();
+                        showNotification('✅ Removed from favorites', 'success');
+                    } else {
+                        showNotification('❌ ' + (data.message || 'Failed to remove'), 'error');
+                    }
+                } else {
+                    // Add to favorites
+                    const response = await fetch('/api/favorites/recipe', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            recipe_id: recipeId,
+                            recipe_title: videoTitle,
+                            recipe_image: videoThumbnail,
+                            recipe_source: 'youtube',
+                            recipe_watch_url: '{{ video.watch_url }}'
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        isFavorited = true;
+                        updateFavoriteButton();
+                        showNotification('✅ Added to favorites!', 'success');
+                    } else {
+                        showNotification('❌ ' + (data.message || 'Failed to add'), 'error');
+                    }
+                }
+            } catch (error) {
+                console.error('Error toggling favorite:', error);
+                showNotification('❌ An error occurred', 'error');
+            }
+        }
+        
+        // Update favorite button appearance
+        function updateFavoriteButton() {
+            const btn = document.getElementById('favorite-btn');
+            if (!btn) return;
+            
+            if (isFavorited) {
+                btn.innerHTML = `
+                    <i class="fas fa-heart"></i>
+                    <span class="hidden sm:inline">Favorited</span>
+                `;
+                btn.style.background = 'linear-gradient(135deg, #ED4956 0%, #C13584 100%)';
+            } else {
+                btn.innerHTML = `
+                    <i class="far fa-heart"></i>
+                    <span class="hidden sm:inline">Favorite</span>
+                `;
+                btn.style.background = 'linear-gradient(135deg, #ED8936 0%, #68D391 100%)';
+            }
+        }
+        
+        // Animations on page load
+        anime({
+            targets: '.video-container',
+            opacity: [0, 1],
+            translateY: [30, 0],
+            duration: 800,
+            easing: 'easeOutExpo'
+        });
+        
+        anime({
+            targets: '.gradient-card, .bg-white',
+            opacity: [0, 1],
+            translateY: [40, 0],
+            delay: anime.stagger(100),
+            duration: 800,
+            easing: 'easeOutExpo'
+        });
+        
+        // Save to favorites (legacy function - redirects to toggleFavorite)
+        function saveToFavorites() {
+            toggleFavorite();
+        }
+        
+        // Share video
+        function shareVideo() {
+            const shareData = {
+                title: "{{ video.title }}",
+                text: "Check out this amazing recipe video!",
+                url: window.location.href
+            };
+            
+            if (navigator.share) {
+                navigator.share(shareData)
+                    .then(() => showNotification('✅ Shared successfully!', 'success'))
+                    .catch((error) => console.log('Error sharing:', error));
+            } else {
+                // Fallback: Copy to clipboard
+                navigator.clipboard.writeText(window.location.href)
+                    .then(() => showNotification('📋 Link copied to clipboard!', 'success'))
+                    .catch(() => showNotification('❌ Failed to copy link', 'error'));
+            }
+        }
+        
+        // Add to playlist
+        function addToPlaylist() {
+            showNotification('📝 Playlist feature coming soon!', 'info');
+        }
+        
+        // Set reminder
+        function setReminder() {
+            showNotification('⏰ Reminder feature coming soon!', 'info');
+        }
+        
+        // Download recipe
+        function downloadRecipe() {
+            const recipeText = `
+${"{"}{"{"} video.title {"}"}{"}"} 
+
+Channel: ${"{"}{"{"} video.channel_name {"}"}{"}"} 
+Duration: ${"{"}{"{"} video.duration {"}"}{"}"} 
+
+{% if video.ingredients and video.ingredients|length > 0 %}
+INGREDIENTS:
+{% for ingredient in video.ingredients %}
+- ${"{"}{"{"} ingredient {"}"}{"}"} 
+{% endfor %}
+{% endif %}
+
+{% if video.steps and video.steps|length > 0 %}
+INSTRUCTIONS:
+{% for step in video.steps %}
+${"{"}{"{"} step.step_number {"}"}{"}"}. ${"{"}{"{"} step.instruction {"}"}{"}"} 
+{% endfor %}
+{% endif %}
+
+DESCRIPTION:
+${"{"}{"{"} video.description or video.summary {"}"}{"}"} 
+
+Watch: ${"{"}{"{"} video.watch_url {"}"}{"}"} 
+            `.trim();
+            
+            const blob = new Blob([recipeText], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${"{"}{"{"} video.title {"}"}{"}"} .txt`.replace(/[^a-z0-9]/gi, '_');
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            showNotification('📥 Recipe downloaded!', 'success');
+        }
+        
+        // Save notes
+        function saveNotes() {
+            const notes = document.getElementById('personalNotes').value;
+            
+            if (!notes.trim()) {
+                showNotification('⚠️ Please write some notes first', 'warning');
+                return;
+            }
+            
+            const noteData = {
+                video_id: "{{ video.video_id }}",
+                title: "{{ video.title }}",
+                notes: notes,
+                watch_url: "{{ video.watch_url }}"
+            };
+            
+            fetch('/api/video/notes', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(noteData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification('✅ Notes saved successfully!', 'success');
+                } else {
+                    showNotification('❌ Failed to save notes', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error saving notes:', error);
+                showNotification('❌ Error saving notes', 'error');
+            });
+        }
+        
+        // Show notification
+        function showNotification(message, type = 'info') {
+            const colors = {
+                success: 'bg-green-500',
+                error: 'bg-red-500',
+                warning: 'bg-yellow-500',
+                info: 'bg-blue-500'
+            };
+            
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 ${colors[type]} text-white px-6 py-4 rounded-xl shadow-2xl z-50 font-semibold flex items-center gap-3`;
+            notification.innerHTML = `
+                <span>${message}</span>
+                <button onclick="this.parentElement.remove()" class="ml-2">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            anime({
+                targets: notification,
+                translateX: [400, 0],
+                opacity: [0, 1],
+                duration: 500,
+                easing: 'easeOutExpo'
+            });
+            
+            setTimeout(() => {
+                anime({
+                    targets: notification,
+                    translateX: [0, 400],
+                    opacity: [1, 0],
+                    duration: 500,
+                    easing: 'easeInExpo',
+                    complete: () => notification.remove()
+                });
+            }, 4000);
+        }
+        
+        // Load saved notes if any
+        window.addEventListener('DOMContentLoaded', function() {
+            // Load saved notes
+            fetch(`/api/video/notes/{{ video.video_id }}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.notes) {
+                        document.getElementById('personalNotes').value = data.notes;
+                    }
+                })
+                .catch(error => console.log('No saved notes found'));
+            
+            // Check favorite status
+            checkFavoriteStatus();
+        });
+    </script>
+    
+    <!-- Socket.IO for Voice Control TTS -->
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    
+    <!-- Global Voice Control -->
+    <script src="{{ url_for('static', filename='js/voice-control-global.js') }}"></script>
+</body>
+</html>
+
