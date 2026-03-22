@@ -327,8 +327,6 @@ RESEARCH_PAPER_DATA.md
 run_all_tests.py
 run_comprehensive_tests.py
 run_tests_venv.ps1
-run_tests.py
-run.py
 runtime.txt
 show_cleanup_summary.py
 system-report.json
